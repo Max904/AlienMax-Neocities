@@ -1,16 +1,16 @@
 window.SITE = {
   "site": {
-    "title": "Purple Radio",
-    "tagline": "transmitiendo desde la galaxia morada",
-    "blogTagline": "diario de a bordo, fecha estelar 2010",
-    "marquee": "✦ bienvenid@ a mi blog espacial ✦ i hope the aliens believe in me ✦ no olvides dejar tu mensaje en el libro de visitas ✦ ¡haz click en Ditto! ✦"
+    "title": "Test",
+    "tagline": "Test",
+    "blogTagline": "Test",
+    "marquee": "Test"
   },
   "profile": {
     "name": "AlienMax",
-    "status": "en órbita 🛸",
-    "mood": "soñador 💭",
-    "planet": "Tierra (por ahora)",
-    "color": "morado",
+    "status": "Test",
+    "mood": "Test",
+    "planet": "Test",
+    "color": "Test",
     "avatar": "assets/alienmax.gif"
   },
   "home": {
