@@ -1,16 +1,16 @@
 window.SITE = {
   "site": {
-    "title": "Tes",
-    "tagline": "Test",
-    "blogTagline": "Test",
-    "marquee": "Test"
+    "title": "Purple Radio",
+    "tagline": "Espero que te guste tu estancia!",
+    "blogTagline": "Donde trato de soltar mis ideas al mundo.",
+    "marquee": "Página aún en construcción, espera ver errores, ignora a Ditto. Todavía está aprendiendo a caminar."
   },
   "profile": {
-    "name": "Test",
-    "status": "Test",
+    "name": "AlienMAx",
+    "status": "Emocinado 💜",
     "mood": "Test",
-    "planet": "Test",
-    "color": "Test",
+    "planet": "Tierra (por ahora)",
+    "color": "Morado (un poco obvio ¿no?)",
     "avatar": "assets/alienmax.gif"
   },
   "home": {
@@ -43,11 +43,11 @@ window.SITE = {
   ],
   "music": [
     {
-      "title": "I Am",
-      "artist": "Earth, Wind & Fire",
-      "note": "Boogie Wonderland y You And I son mis canciones favoritas del álbum",
-      "url": "https://www.youtube.com/watch?v=6Z2xClustQo&list=PLyLqIRlItpe0SGOR9H66eTXiDSk2OEwDp",
-      "cover": "assets/uploads/mwpk379j-1000095825.jpg"
+      "title": "Where Do We Go from Here? / Synkronized",
+      "artist": "Jamiroquai",
+      "note": "Una de las varias canciones de Jamiroquai que realmente me levanta el animo cuando estoy arrastrado por el suelo.",
+      "url": "https://www.youtube.com/watch?v=qih-jEFPxFc",
+      "cover": "assets/uploads/mwpke8ah-1000092768.jpg"
     }
   ],
   "gallery": []
