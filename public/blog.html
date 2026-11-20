@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>✦ AlienMax's Blog ✦ Blogs</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/blog.css">
+  <link rel="stylesheet" href="css/ditto.css">
+</head>
+<body class="page-blog" data-page-title="Blogs">
+  <div class="wrapper">
+
+    <header class="site-header">
+      <div class="header-deco"><img class="pixel" src="assets/eye.gif" alt=""><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img src="assets/space-alien.gif" alt="" style="height:70px"><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img class="pixel" src="assets/eye.gif" alt=""></div>
+      <h1 class="glow">✦ Blogs de <span data-bind="profile.name">AlienMax</span> ✦</h1>
+      <p class="tagline"><span data-bind="site.blogTagline">diario de a bordo</span> <span class="blink">_</span></p>
+    </header>
+
+    <nav class="nav">
+      <a href="index.html">★ Inicio</a>
+      <a href="blog.html" class="active">✎ Blogs</a>
+      <a href="musica.html">♪ Música</a>
+      <a href="sobre-mi.html">👽 Sobre mí</a>
+      <a href="galeria.html">❀ Galería</a>
+      <a href="libro-de-visitas.html">✉ Visitas</a>
+    </nav>
+
+    <div class="columns">
+      <aside class="sidebar">
+        <div class="box">
+          <div class="box-title">★ AUTOR ★</div>
+          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Ánimo: <span style="color:var(--pink)" data-bind="profile.mood"></span></p></div></div>
+        </div>
+
+        <div class="box">
+          <div class="box-title">✦ ARCHIVO ✦</div>
+          <div class="box-body"><ul class="stat-list" id="archive"></ul></div>
+        </div>
+
+        <div class="box">
+          <div class="box-title">☆ VISITAS ☆</div>
+          <div class="box-body"><div class="counter" id="visit-counter">0001337</div></div>
+        </div>
+
+        <div style="text-align:center"><img src="assets/flower.gif" alt="" style="width:140px"></div>
+      </aside>
+
+      <main class="main">
+        <div class="box filter-bar" id="filter-bar"></div>
+        <div id="posts" class="main"></div>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
+      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · fondo: ondas moradas de noche
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
+    </footer>
+  </div>
+
+  <script src="js/stars.js"></script>
+  <script src="data/content.js"></script>
+  <script src="js/data-bind.js"></script>
+  <script src="js/render-blog.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/ditto.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>✦ Panel de AlienMax ✦ Admin</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="page-admin">
+  <div class="wrapper">
+
+    <header class="site-header">
+      <h1 class="glow">✦ Panel de control ✦</h1>
+      <p class="tagline">edita tu blog sin tocar código <span class="blink">_</span></p>
+    </header>
+
+    <nav class="nav" id="admin-tabs">
+      <a href="../index.html">← Ver sitio</a>
+      <a href="#" data-tab="sitio" class="active">⚙ Sitio y perfil</a>
+      <a href="#" data-tab="textos">✎ Inicio y sobre mí</a>
+      <a href="#" data-tab="blogs">📓 Blogs</a>
+      <a href="#" data-tab="musica">♪ Música</a>
+      <a href="#" data-tab="galeria">❀ Galería</a>
+      <a href="#" data-tab="publicar">🚀 Publicar</a>
+    </nav>
+
+    <div class="status-bar" id="status-bar">
+      <span id="dirty-pill" class="pill ok">Sin cambios</span>
+      <span class="spacer"></span>
+      <a href="../index.html?preview=1" target="_blank" rel="noopener">vista previa inicio</a>
+      <a href="../blog.html?preview=1" target="_blank" rel="noopener">vista previa blogs</a>
+      <a href="../musica.html?preview=1" target="_blank" rel="noopener">vista previa música</a>
+    </div>
+
+    <div id="draft-banner" class="banner" hidden>
+      Se cargó un borrador local que todavía no has publicado.
+      <button type="button" id="discard-draft">Descartar borrador</button>
+    </div>
+
+    <section class="box">
+      <div class="box-title" id="panel-title">⚙ SITIO Y PERFIL</div>
+      <div class="box-body" id="panel"></div>
+    </section>
+
+    <footer class="site-footer">
+      Los cambios se guardan como borrador en este navegador hasta que los publiques.
+    </footer>
+  </div>
+
+  <script src="../js/stars.js"></script>
+  <script src="../data/content.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

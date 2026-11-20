@@ -1,0 +1,118 @@
+/* ============================================
+   blog.css — pestaña de blogs
+   Fondo: purple-water.gif
+   ============================================ */
+
+body.page-blog {
+  background:
+    linear-gradient(180deg, rgba(13, 2, 33, 0.35), rgba(45, 11, 90, 0.35)),
+    url("../assets/purple-water.gif") center / cover fixed no-repeat;
+  image-rendering: auto;
+}
+
+/* en la pestaña de blogs el agua es la protagonista, estrellas más suaves */
+body.page-blog #starfield { opacity: 0.45; }
+
+.post {
+  background: rgba(26, 6, 56, 0.9);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(165, 107, 255, 0.55);
+  overflow: hidden;
+}
+
+.post-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, var(--purple-1), var(--purple-2));
+  border-bottom: 2px dashed var(--lilac);
+}
+
+.post-head h2 { font-size: 12px; color: var(--alien-green); }
+.post-date { color: var(--lilac); font-size: 18px; }
+
+.post-body { padding: 14px 16px; font-size: 21px; }
+.post-body p { margin-bottom: 10px; }
+
+.post-body img.inline {
+  float: right;
+  width: 120px;
+  margin: 0 0 8px 12px;
+  border: 3px solid var(--lilac);
+  border-radius: 10px;
+}
+
+.post-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-top: 2px dotted var(--purple-3);
+  color: var(--text-dim);
+}
+
+.tags span {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  font-size: 17px;
+  color: var(--space-0);
+  background: var(--lilac);
+  border-radius: 10px;
+}
+
+.mood { color: var(--pink); }
+
+.like-btn,
+.comment-toggle {
+  font-family: var(--font-body);
+  font-size: 19px;
+  padding: 3px 12px;
+  color: var(--text);
+  background: var(--purple-1);
+  border: 2px outset var(--lilac);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.like-btn:hover,
+.comment-toggle:hover { background: var(--purple-2); }
+.like-btn.liked { background: var(--pink); color: var(--space-0); }
+
+.comments {
+  display: none;
+  padding: 10px 14px 14px;
+  background: rgba(13, 2, 33, 0.7);
+  border-top: 2px dotted var(--purple-3);
+}
+
+.comments.open { display: block; }
+.comment { padding: 6px 0; border-bottom: 1px dotted var(--purple-2); }
+.comment b { color: var(--alien-green); }
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.filter-bar button {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  padding: 8px 10px;
+  color: var(--text);
+  background: var(--purple-1);
+  border: 2px outset var(--lilac);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.filter-bar button.active { background: var(--alien-green); color: var(--space-0); }
