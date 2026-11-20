@@ -1,7 +1,0 @@
-Mover el panel admin a admin/ y publicarlo en GitHub Pages
-
-Neocities solo recibe public/. Nuevo workflow pages.yml publica public/ y
-admin/ en GitHub Pages; el panel deduce usuario y repo desde la URL.
-
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01SgFGrg66ffFCsKxhUjEXz7
