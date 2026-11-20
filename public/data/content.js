@@ -30,25 +30,24 @@ window.SITE = {
     {
       "id": "p4",
       "title": "Mi primera entrada",
-      "date": "2010-10-30",
-      "mood": "🛸 emocionado",
+      "date": "2026-11-20",
+      "mood": "Emocionado 💜",
       "tags": [
-        "espacio",
-        "morado"
+        "Primer Blog"
       ],
       "image": "",
-      "likes": 20,
-      "body": "Hola mundo, hola galaxia. Este es el primer post del blog. Prometo escribir seguido, actualizar el diseño y no llenarlo de demasiados gifs (mentira, lo voy a llenar).",
+      "likes": 0,
+      "body": "Hola mundo, Este es mi primer blog e intento de crear una página para compartir proyectos y experiencias con el mundo terrícola.\n\nAún estoy desarrollando la página así que el diseño no es final.",
       "comments": []
     }
   ],
   "music": [
     {
-      "title": "Canción de ejemplo",
-      "artist": "Artista de ejemplo",
-      "note": "Reemplaza esta entrada desde el panel admin con lo que andas escuchando.",
-      "url": "",
-      "cover": "assets/purple-purplecore.gif"
+      "title": "I Am",
+      "artist": "Earth, Wind & Fire",
+      "note": "Boogie Wonderland y You And I son mis canciones favoritas del álbum",
+      "url": "https://www.youtube.com/watch?v=6Z2xClustQo&list=PLyLqIRlItpe0SGOR9H66eTXiDSk2OEwDp",
+      "cover": "assets/uploads/mwpk379j-1000095825.jpg"
     }
   ],
   "gallery": []
