@@ -1,6 +1,6 @@
 window.SITE = {
   "site": {
-    "title": "Test",
+    "title": "Tes",
     "tagline": "Test",
     "blogTagline": "Test",
     "marquee": "Test"
