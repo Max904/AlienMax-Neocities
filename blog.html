@@ -9,24 +9,19 @@
   <link rel="stylesheet" href="css/blog.css">
   <link rel="stylesheet" href="css/ditto.css">
 </head>
-<body class="page-blog">
+<body class="page-blog" data-page-title="Blogs">
   <div class="wrapper">
 
     <header class="site-header">
-      <div class="header-deco">
-        <img class="pixel" src="assets/eye.gif" alt="">
-        <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-        <img src="assets/space-alien.gif" alt="alien" style="height:70px">
-        <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-        <img class="pixel" src="assets/eye.gif" alt="">
-      </div>
-      <h1 class="glow">✦ Blogs de AlienMax ✦</h1>
-      <p class="tagline">diario de a bordo, fecha estelar 2010 <span class="blink">_</span></p>
+      <div class="header-deco"><img class="pixel" src="assets/eye.gif" alt=""><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img src="assets/space-alien.gif" alt="" style="height:70px"><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img class="pixel" src="assets/eye.gif" alt=""></div>
+      <h1 class="glow">✦ Blogs de <span data-bind="profile.name">AlienMax</span> ✦</h1>
+      <p class="tagline"><span data-bind="site.blogTagline">diario de a bordo</span> <span class="blink">_</span></p>
     </header>
 
     <nav class="nav">
       <a href="index.html">★ Inicio</a>
       <a href="blog.html" class="active">✎ Blogs</a>
+      <a href="musica.html">♪ Música</a>
       <a href="sobre-mi.html">👽 Sobre mí</a>
       <a href="galeria.html">❀ Galería</a>
       <a href="libro-de-visitas.html">✉ Visitas</a>
@@ -34,137 +29,42 @@
 
     <div class="columns">
       <aside class="sidebar">
-        <div class="box profile">
+        <div class="box">
           <div class="box-title">★ AUTOR ★</div>
-          <div class="box-body">
-            <img class="avatar" src="assets/alienmax.gif" alt="AlienMax">
-            <div class="name">AlienMax</div>
-            <p class="status">Ánimo: <span style="color:var(--pink)">soñador 💭</span></p>
-          </div>
+          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Ánimo: <span style="color:var(--pink)" data-bind="profile.mood"></span></p></div></div>
         </div>
 
         <div class="box">
           <div class="box-title">✦ ARCHIVO ✦</div>
-          <div class="box-body">
-            <ul class="stat-list">
-              <li>Noviembre 2010 (3)</li>
-              <li>Octubre 2010 (1)</li>
-            </ul>
-          </div>
+          <div class="box-body"><ul class="stat-list" id="archive"></ul></div>
         </div>
 
         <div class="box">
           <div class="box-title">☆ VISITAS ☆</div>
-          <div class="box-body">
-            <div class="counter" id="visit-counter">0001337</div>
-          </div>
+          <div class="box-body"><div class="counter" id="visit-counter">0001337</div></div>
         </div>
 
-        <div style="text-align:center">
-          <img src="assets/flower.gif" alt="flor" style="width:140px">
-        </div>
+        <div style="text-align:center"><img src="assets/flower.gif" alt="" style="width:140px"></div>
       </aside>
 
       <main class="main">
-        <div class="box filter-bar">
-          <span style="color:var(--lilac)">Filtrar:</span>
-          <button class="active" data-tag="todos">TODOS</button>
-          <button data-tag="espacio">ESPACIO</button>
-          <button data-tag="vida">VIDA</button>
-          <button data-tag="morado">MORADO</button>
-        </div>
-
-        <article class="post" data-tags="espacio vida">
-          <div class="post-head">
-            <h2>Hoy vi una estrella rara</h2>
-            <span class="post-date">20 · Nov · 2010</span>
-          </div>
-          <div class="post-body">
-            <img class="inline" src="assets/space-alien.gif" alt="aliens">
-            <p>Salí al patio a mirar el cielo y había una estrella que parpadeaba más que las otras. Obvio pensé que era una nave.</p>
-            <p>Si los aliens existen espero que sean amigables y les guste el color morado. Les dejé una señal con la linterna del celular, por si acaso.</p>
-          </div>
-          <div class="post-foot">
-            <div class="tags"><span>espacio</span><span>vida</span></div>
-            <span class="mood">Ánimo: ✦ curioso</span>
-            <button class="like-btn" data-post="p1" data-base="12"></button>
-            <button class="comment-toggle" data-target="c1">💬 comentarios (2)</button>
-          </div>
-          <div class="comments" id="c1">
-            <div class="comment"><b>gatito_lila:</b> ¡yo también vi algo raro anoche! 👀</div>
-            <div class="comment"><b>Ditto:</b> dit... to?</div>
-          </div>
-        </article>
-
-        <article class="post" data-tags="morado">
-          <div class="post-head">
-            <h2>Por qué todo es morado aquí</h2>
-            <span class="post-date">15 · Nov · 2010</span>
-          </div>
-          <div class="post-body">
-            <img class="inline" src="assets/flower.gif" alt="flor morada">
-            <p>Me preguntaron por qué mi blog es completamente morado. Fácil: el morado es el color del espacio profundo, de las flores bonitas y de las olas de noche.</p>
-            <p>Además combina con todo lo que me gusta. Fin de la discusión. 💜</p>
-          </div>
-          <div class="post-foot">
-            <div class="tags"><span>morado</span></div>
-            <span class="mood">Ánimo: 💜 feliz</span>
-            <button class="like-btn" data-post="p2" data-base="8"></button>
-            <button class="comment-toggle" data-target="c2">💬 comentarios (1)</button>
-          </div>
-          <div class="comments" id="c2">
-            <div class="comment"><b>flor_violeta:</b> el morado siempre gana ✿</div>
-          </div>
-        </article>
-
-        <article class="post" data-tags="vida">
-          <div class="post-head">
-            <h2>Ditto se escapó (otra vez)</h2>
-            <span class="post-date">08 · Nov · 2010</span>
-          </div>
-          <div class="post-body">
-            <img class="inline pixel" src="assets/cat-cat-licking.gif" alt="gatito">
-            <p>Si ves un Ditto caminando por el blog no hay que perseguirlo, solo darle click y saltará. Es su forma de saludar.</p>
-            <p>También ando probando nuevos botones y gifs para la galería, ya los verán.</p>
-          </div>
-          <div class="post-foot">
-            <div class="tags"><span>vida</span></div>
-            <span class="mood">Ánimo: 😴 con sueño</span>
-            <button class="like-btn" data-post="p3" data-base="5"></button>
-            <button class="comment-toggle" data-target="c3">💬 comentarios (0)</button>
-          </div>
-          <div class="comments" id="c3">
-            <div class="comment">Aún no hay comentarios, ¡sé el primero en el <a href="libro-de-visitas.html">libro de visitas</a>!</div>
-          </div>
-        </article>
-
-        <article class="post" data-tags="espacio morado">
-          <div class="post-head">
-            <h2>Mi primera entrada</h2>
-            <span class="post-date">30 · Oct · 2010</span>
-          </div>
-          <div class="post-body">
-            <p>Hola mundo, hola galaxia. Este es el primer post del blog. Prometo escribir seguido, actualizar el diseño y no llenarlo de demasiados gifs (mentira, lo voy a llenar).</p>
-          </div>
-          <div class="post-foot">
-            <div class="tags"><span>espacio</span><span>morado</span></div>
-            <span class="mood">Ánimo: 🛸 emocionado</span>
-            <button class="like-btn" data-post="p4" data-base="20"></button>
-          </div>
-        </article>
+        <div class="box filter-bar" id="filter-bar"></div>
+        <div id="posts" class="main"></div>
       </main>
     </div>
 
     <footer class="site-footer">
       <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-      © <span id="year">2010</span> AlienMax · fondo: ondas moradas de noche
+      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · fondo: ondas moradas de noche
       <img class="pixel" src="assets/purple-purplecore.gif" alt="">
     </footer>
   </div>
 
   <script src="js/stars.js"></script>
+  <script src="data/content.js"></script>
+  <script src="js/data-bind.js"></script>
+  <script src="js/render-blog.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/blog.js"></script>
   <script src="js/ditto.js"></script>
 </body>
 </html>

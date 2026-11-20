@@ -9,15 +9,11 @@
   <link rel="stylesheet" href="css/pages.css">
   <link rel="stylesheet" href="css/ditto.css">
 </head>
-<body class="page-gallery">
+<body class="page-gallery" data-page-title="Galería">
   <div class="wrapper">
 
     <header class="site-header">
-      <div class="header-deco">
-        <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-        <img src="assets/flower.gif" alt="flor" style="height:70px">
-        <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-      </div>
+      <div class="header-deco"><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img src="assets/flower.gif" alt="" style="height:70px"><img class="pixel" src="assets/purple-purplecore.gif" alt=""></div>
       <h1 class="glow">✦ Galería Morada ✦</h1>
       <p class="tagline">mis gifs favoritos del universo <span class="blink">_</span></p>
     </header>
@@ -25,31 +21,30 @@
     <nav class="nav">
       <a href="index.html">★ Inicio</a>
       <a href="blog.html">✎ Blogs</a>
+      <a href="musica.html">♪ Música</a>
       <a href="sobre-mi.html">👽 Sobre mí</a>
       <a href="galeria.html" class="active">❀ Galería</a>
       <a href="libro-de-visitas.html">✉ Visitas</a>
     </nav>
 
-    <section class="box">
-      <div class="box-title">❀ COLECCIÓN ❀</div>
-      <div class="gallery-grid">
-        <figure class="gallery-item"><img src="assets/alienmax.gif" alt="AlienMax"><figcaption>AlienMax</figcaption></figure>
-        <figure class="gallery-item"><img src="assets/space-alien.gif" alt="aliens"><figcaption>Aliens felices</figcaption></figure>
-        <figure class="gallery-item"><img src="assets/flower.gif" alt="flor"><figcaption>Flor morada</figcaption></figure>
-        <figure class="gallery-item"><img src="assets/purple-water.gif" alt="agua morada"><figcaption>Agua de noche</figcaption></figure>
-        <figure class="gallery-item"><img class="pixel" src="assets/cat-cat-licking.gif" alt="gatito"><figcaption>Gatito</figcaption></figure>
-        <figure class="gallery-item"><img src="assets/ditto.gif" alt="Ditto"><figcaption>Ditto</figcaption></figure>
-        <figure class="gallery-item"><img class="pixel" src="assets/eye.gif" alt="ojo"><figcaption>Ojito</figcaption></figure>
-        <figure class="gallery-item"><img class="pixel" src="assets/purple-purplecore.gif" alt="corazón"><figcaption>Corazón</figcaption></figure>
-      </div>
-    </section>
+    <main class="main">
+        <div class="box">
+          <div class="box-title">❀ COLECCIÓN ❀</div>
+          <div class="box-body"><div class="gallery-grid" id="gallery-grid" style="padding:0"></div></div>
+        </div>
+    </main>
 
     <footer class="site-footer">
-      © <span id="year">2010</span> AlienMax · <a href="index.html">volver a la nave</a>
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
+      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · <a href="index.html">volver a la nave</a>
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
     </footer>
   </div>
 
   <script src="js/stars.js"></script>
+  <script src="data/content.js"></script>
+  <script src="js/data-bind.js"></script>
+  <script src="js/render-gallery.js"></script>
   <script src="js/main.js"></script>
   <script src="js/ditto.js"></script>
 </body>

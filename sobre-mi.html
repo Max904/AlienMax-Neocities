@@ -9,22 +9,19 @@
   <link rel="stylesheet" href="css/pages.css">
   <link rel="stylesheet" href="css/ditto.css">
 </head>
-<body class="page-about">
+<body class="page-about" data-page-title="Sobre mí">
   <div class="wrapper">
 
     <header class="site-header">
-      <div class="header-deco">
-        <img class="pixel" src="assets/eye.gif" alt="">
-        <img src="assets/space-alien.gif" alt="alien" style="height:70px">
-        <img class="pixel" src="assets/eye.gif" alt="">
-      </div>
-      <h1 class="glow">✦ Sobre AlienMax ✦</h1>
+      <div class="header-deco"><img class="pixel" src="assets/eye.gif" alt=""><img src="assets/space-alien.gif" alt="" style="height:70px"><img class="pixel" src="assets/eye.gif" alt=""></div>
+      <h1 class="glow">✦ Sobre <span data-bind="profile.name">AlienMax</span> ✦</h1>
       <p class="tagline">archivo clasificado nivel 9 <span class="blink">_</span></p>
     </header>
 
     <nav class="nav">
       <a href="index.html">★ Inicio</a>
       <a href="blog.html">✎ Blogs</a>
+      <a href="musica.html">♪ Música</a>
       <a href="sobre-mi.html" class="active">👽 Sobre mí</a>
       <a href="galeria.html">❀ Galería</a>
       <a href="libro-de-visitas.html">✉ Visitas</a>
@@ -32,13 +29,16 @@
 
     <div class="columns">
       <aside class="sidebar">
-        <div class="box profile">
-          <div class="box-title">★ AlienMax ★</div>
-          <div class="box-body">
-            <img class="avatar" src="assets/alienmax.gif" alt="AlienMax">
-            <p class="status">Usuario desde 2010</p>
-          </div>
+        <div class="box">
+          <div class="box-title">★ MI PERFIL ★</div>
+          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Estado: <span style="color:var(--alien-green)" data-bind="profile.status"></span></p></div></div>
         </div>
+
+        <div class="box">
+          <div class="box-title">♥ DATOS ♥</div>
+          <div class="box-body"><ul class="stat-list"><li>Planeta: <span data-bind="profile.planet"></span></li><li>Color: <span data-bind="profile.color"></span></li><li>Hora galáctica: <span id="clock"></span></li></ul></div>
+        </div>
+
         <div class="box">
           <div class="box-title">☆ VISITAS ☆</div>
           <div class="box-body"><div class="counter" id="visit-counter">0001337</div></div>
@@ -46,40 +46,29 @@
       </aside>
 
       <main class="main">
-        <section class="box">
+        <div class="box">
           <div class="box-title">👽 QUIÉN SOY</div>
-          <div class="box-body about-text">
-            <p>Soy AlienMax, una criatura morada que vive en internet. Me gustan las antenitas, los gifs brillantes, las estrellas y todo lo que se vea espacial.</p>
-            <h3>MIS COSAS FAVORITAS</h3>
-            <ul class="fav-list">
-              <li>El color morado, en todas sus versiones</li>
-              <li>Mirar el cielo de noche</li>
-              <li>Gifs pixelados y botones de 88x31</li>
-              <li>Los gatitos y las flores</li>
-              <li>Ditto, obviamente</li>
-            </ul>
-            <h3>LEMA</h3>
-            <p style="color:var(--alien-green)">"I hope the aliens believe in me."</p>
-          </div>
-        </section>
+          <div class="box-body"><div class="about-text"><div id="about-intro"></div><h3>MIS COSAS FAVORITAS</h3><ul class="fav-list" id="about-favs"></ul><h3>LEMA</h3><p style="color:var(--alien-green)" id="about-motto"></p></div></div>
+        </div>
 
-        <section class="box">
+        <div class="box">
           <div class="box-title">💜 MIS AMIGOS DEL ESPACIO</div>
-          <div class="box-body" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center">
-            <img class="pixel" src="assets/cat-cat-licking.gif" alt="gatito" style="width:70px">
-            <img src="assets/flower.gif" alt="flor" style="width:100px">
-            <img src="assets/space-alien.gif" alt="aliens" style="width:120px">
-          </div>
-        </section>
+          <div class="box-body"><div id="about-friends" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center"></div></div>
+        </div>
       </main>
     </div>
 
     <footer class="site-footer">
-      © <span id="year">2010</span> AlienMax · <a href="index.html">volver a la nave</a>
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
+      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · <a href="index.html">volver a la nave</a>
+      <img class="pixel" src="assets/purple-purplecore.gif" alt="">
     </footer>
   </div>
 
   <script src="js/stars.js"></script>
+  <script src="data/content.js"></script>
+  <script src="js/data-bind.js"></script>
+  <script src="js/render-about.js"></script>
   <script src="js/main.js"></script>
   <script src="js/ditto.js"></script>
 </body>
