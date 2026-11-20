@@ -1,0 +1,192 @@
+/* ============================================
+   layout.css — cabecera, nav, columnas, widgets
+   ============================================ */
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  width: min(1040px, 96%);
+  margin: 18px auto 120px;
+}
+
+/* ---------- cabecera ---------- */
+.site-header {
+  text-align: center;
+  padding: 18px 12px 14px;
+  background: linear-gradient(180deg, rgba(75, 29, 143, 0.85), rgba(45, 11, 90, 0.85));
+  border: 3px double var(--border);
+  border-radius: 14px;
+  box-shadow: 0 0 22px rgba(165, 107, 255, 0.6);
+}
+
+.site-header h1 {
+  font-size: clamp(16px, 3.2vw, 30px);
+  color: var(--lilac);
+}
+
+.site-header .tagline {
+  margin-top: 8px;
+  color: var(--alien-green);
+  font-size: 22px;
+}
+
+.header-deco {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.header-deco img { height: 50px; }
+
+/* ---------- navegación ---------- */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 10px;
+  background: rgba(13, 2, 33, 0.75);
+  border: 2px solid var(--purple-2);
+  border-radius: 12px;
+}
+
+.nav a {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  padding: 10px 14px;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--purple-2), var(--purple-1));
+  border: 2px outset var(--lilac);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.nav a:hover,
+.nav a.active {
+  color: var(--space-0);
+  background: linear-gradient(180deg, var(--alien-green), #6fd63b);
+  transform: translateY(-3px) rotate(-2deg);
+  box-shadow: 0 6px 12px rgba(157, 255, 107, 0.4);
+  text-decoration: none;
+}
+
+/* ---------- marquee ---------- */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgba(13, 2, 33, 0.8);
+  border: 2px dashed var(--purple-3);
+  border-radius: 8px;
+  padding: 6px 0;
+  margin-bottom: 12px;
+  color: var(--pink);
+}
+
+.marquee span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scroll-left 22s linear infinite;
+}
+
+@keyframes scroll-left { to { transform: translateX(-100%); } }
+
+/* ---------- columnas ---------- */
+.columns {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- cajas / widgets ---------- */
+.box {
+  background: rgba(26, 6, 56, 0.88);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 0 14px rgba(123, 63, 228, 0.5), inset 0 0 18px rgba(123, 63, 228, 0.25);
+  overflow: hidden;
+}
+
+.box-title {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  padding: 9px 10px;
+  color: var(--space-0);
+  background: linear-gradient(90deg, var(--lilac), var(--purple-3));
+  letter-spacing: 1px;
+}
+
+.box-body { padding: 12px; }
+
+.profile { text-align: center; }
+
+.profile img.avatar {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 3px solid var(--lilac);
+  border-radius: 50%;
+  box-shadow: 0 0 16px var(--purple-3);
+  margin-bottom: 8px;
+}
+
+.profile .name { font-family: var(--font-pixel); font-size: 12px; color: var(--alien-green); }
+.profile .status { margin-top: 6px; color: var(--text-dim); }
+
+.stat-list { list-style: none; }
+.stat-list li { padding: 3px 0; border-bottom: 1px dotted var(--purple-2); }
+.stat-list li:last-child { border-bottom: 0; }
+
+.buttons-88 { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+
+.btn-88 {
+  width: 88px;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  text-align: center;
+  color: var(--space-0);
+  background: linear-gradient(135deg, var(--alien-green), var(--lilac));
+  border: 2px outset #fff;
+}
+
+.counter {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--alien-green);
+  background: #000;
+  border: 2px inset var(--purple-2);
+  padding: 8px;
+}
+
+.main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* ---------- footer ---------- */
+.site-footer {
+  margin-top: 20px;
+  padding: 14px;
+  text-align: center;
+  color: var(--text-dim);
+  background: rgba(13, 2, 33, 0.8);
+  border: 2px solid var(--purple-2);
+  border-radius: 12px;
+}
+
+.site-footer img { vertical-align: middle; height: 26px; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 760px) {
+  .columns { grid-template-columns: 1fr; }
+  .nav a { font-size: 9px; padding: 8px 10px; }
+}
