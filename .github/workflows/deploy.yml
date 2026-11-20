@@ -1,0 +1,29 @@
+name: Deploy to Neocities
+
+# Solo se publica cuando hay cambios en main
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency: # evita despliegues simultáneos
+  group: deploy-to-neocities
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # El sitio es HTML/CSS/JS estático, no hay paso de build.
+      - name: Deploy to Neocities
+        uses: bcomnes/deploy-to-neocities@v3
+        with:
+          api_key: ${{ secrets.NEOCITIES_API_TOKEN }}
+          dist_dir: public
+          cleanup: false            # pon true para borrar en Neocities lo que no esté en public/
+          neocities_supporter: false # true si tienes cuenta supporter
+          preview_before_deploy: true
