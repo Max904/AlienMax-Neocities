@@ -21,7 +21,7 @@ window.SITE = {
     "favorites": [
       "Test"
     ],
-    "motto": "I hope the aliens believe in me.",
+    "motto": "I hope Aliens believe in me",
     "friends": []
   },
   "posts": [],
@@ -30,7 +30,7 @@ window.SITE = {
   "pageGifs": {
     "home": {
       "src": "assets/space-alien.gif",
-      "title": "I hope Aliens believe in me"
+      "title": "I HOPE ALIENS BELIEVE IN ME"
     },
     "blog": {
       "src": "assets/flower.gif",
