@@ -1,5 +1,6 @@
 window.SITE = {
   "site": {
+<<<<<<< HEAD
     "title": "AlienMax's Space Blog",
     "tagline": "transmitiendo desde la galaxia morada",
     "blogTagline": "diario de a bordo, fecha estelar 2010",
@@ -9,28 +10,33 @@ window.SITE = {
     "name": "AlienMax",
     "status": "en órbita 🛸",
     "planet": "Tierra (por ahora)",
+=======
+    "title": "Come back later. Still working on it.",
+    "tagline": "Test",
+    "blogTagline": "Test",
+    "marquee": "Test"
+  },
+  "profile": {
+    "name": "AlienMax",
+    "status": "Test",
+    "mood": "Test",
+    "planet": "Test",
+>>>>>>> 49742dee9975e905c51cbdbd1e6cc7e733a003a5
     "color": "morado",
     "avatar": "assets/alienmax.gif"
   },
   "home": {
-    "welcome": "¡Hola! Soy AlienMax y este es mi rincón del espacio en internet. Aquí escribo mis pensamientos, guardo cosas moradas que me gustan y le doy de comer a Ditto, que anda paseando por todas las páginas.\n\nNavega con el menú de arriba. En Blogs están mis entradas, en Música lo que ando escuchando, en la Galería mis gifs favoritos y en el Libro de visitas puedes dejarme un saludo."
+    "welcome": "Test"
   },
   "about": {
-    "intro": "Soy AlienMax, una criatura morada que vive en internet. Me gustan las antenitas, los gifs brillantes, las estrellas y todo lo que se vea espacial.",
+    "intro": "Test",
     "favorites": [
-      "El color morado, en todas sus versiones",
-      "Mirar el cielo de noche",
-      "Gifs pixelados y botones de 88x31",
-      "Los gatitos y las flores",
-      "Ditto, obviamente"
+      "Test"
     ],
-    "motto": "I hope the aliens believe in me.",
-    "friends": [
-      "assets/cat-cat-licking.gif",
-      "assets/flower.gif",
-      "assets/eye.gif"
-    ]
+    "motto": "I hope Aliens believe in me",
+    "friends": []
   },
+<<<<<<< HEAD
   "posts": [
     {
       "id": "p1",
@@ -149,6 +155,35 @@ window.SITE = {
       "about": "",
       "gallery": "",
       "guestbook": ""
+=======
+  "posts": [],
+  "music": [],
+  "gallery": [],
+  "pageGifs": {
+    "home": {
+      "src": "assets/space-alien.gif",
+      "title": "I HOPE ALIENS BELIEVE IN ME"
+    },
+    "blog": {
+      "src": "assets/flower.gif",
+      "title": ""
+    },
+    "music": {
+      "src": "assets/cat-cat-licking.gif",
+      "title": ""
+    },
+    "about": {
+      "src": "assets/eye.gif",
+      "title": ""
+    },
+    "gallery": {
+      "src": "",
+      "title": ""
+    },
+    "guestbook": {
+      "src": "assets/flower.gif",
+      "title": ""
+>>>>>>> 49742dee9975e905c51cbdbd1e6cc7e733a003a5
     }
   },
   "homeBox": {
