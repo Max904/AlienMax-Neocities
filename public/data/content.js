@@ -1,6 +1,6 @@
 window.SITE = {
   "site": {
-    "title": "Test",
+    "title": "Come back later. Still working on it.",
     "tagline": "Test",
     "blogTagline": "Test",
     "marquee": "Test"
@@ -30,7 +30,7 @@ window.SITE = {
   "pageGifs": {
     "home": {
       "src": "assets/space-alien.gif",
-      "title": "👽 SEÑAL DEL ESPACIO"
+      "title": ""
     },
     "blog": {
       "src": "assets/flower.gif",
