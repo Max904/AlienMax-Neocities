@@ -1,0 +1,207 @@
+/* ============================================
+   retro.css — acabado "web 2010"
+   Se carga al final: Verdana/Georgia, degradados brillantes (glossy),
+   esquinas poco redondeadas, sombras suaves, barra de pestañas, footer gordo.
+   ============================================ */
+
+:root {
+  --font-pixel: Verdana, "Lucida Grande", Tahoma, sans-serif;
+  --font-body: Verdana, "Lucida Grande", Tahoma, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --panel: #1c0a3c;
+  --panel-2: #240e4d;
+  --line: #5e3aa6;
+  --gloss: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.08) 50%, rgba(0,0,0,.08) 51%, rgba(0,0,0,0) 100%);
+}
+
+body {
+  font-size: 12px;
+  line-height: 1.55;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px),
+    radial-gradient(ellipse at 50% -10%, #6a35c2 0%, rgba(106,53,194,0) 55%),
+    linear-gradient(180deg, #150430, #2a0d55 70%, #1a0638);
+  background-attachment: fixed;
+}
+#starfield { opacity: .7; }
+
+a { color: #c9a6ff; }
+a:hover { color: #fff; text-decoration: underline; }
+
+h1, h2, h3 { font-family: var(--font-serif); font-weight: bold; }
+.glow { text-shadow: 1px 1px 0 #2a0d55, 0 2px 6px rgba(0,0,0,.6); }
+
+/* ---- contenedor tipo "papel" con sombra ---- */
+.wrapper {
+  width: min(980px, 98%);
+  margin: 0 auto 90px;
+  background: rgba(20, 6, 44, .82);
+  border: 1px solid #7a4fd0;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 0 0 4px rgba(0,0,0,.25), 0 10px 40px rgba(0,0,0,.7);
+  padding: 0 0 12px;
+}
+.columns, .marquee { margin-left: 12px; margin-right: 12px; }
+
+/* ---- cabecera glossy ---- */
+.site-header {
+  position: relative;
+  border: 0;
+  border-bottom: 1px solid #12042b;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 16px 16px 14px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "deco title" "deco tag";
+  column-gap: 18px;
+  align-items: center;
+  background: linear-gradient(180deg, #8b4df0 0%, #5f26b8 48%, #4a1b97 50%, #3a1180 100%);
+  overflow: hidden;
+}
+.site-header::before { /* brillo de cristal */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.06));
+  pointer-events: none;
+}
+.site-header > * { position: relative; }
+.header-deco { grid-area: deco; margin: 0; }
+.site-header h1 {
+  grid-area: title;
+  font-size: clamp(20px, 3.6vw, 32px);
+  font-style: italic;
+  color: #fff;
+  letter-spacing: -.5px;
+}
+.site-header .tagline { grid-area: tag; margin: 2px 0 0; font-size: 13px; color: #e6d3ff; font-style: italic; font-family: var(--font-serif); }
+.header-deco img { height: 70px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.header-deco:empty { display: none; }
+
+/* ---- barra de pestañas ---- */
+.nav {
+  gap: 0;
+  margin: 0 0 12px;
+  padding: 0 8px;
+  justify-content: flex-start;
+  border: 0;
+  border-bottom: 1px solid #12042b;
+  border-radius: 0;
+  background: linear-gradient(180deg, #2c1163, #1a0638);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+}
+.nav a {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 11px 16px;
+  color: #d8c3ff;
+  background: none;
+  border: 0;
+  border-right: 1px solid rgba(0,0,0,.35);
+  box-shadow: 1px 0 0 rgba(255,255,255,.07);
+  border-radius: 0;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.6);
+  transition: background .15s;
+}
+.nav a:hover {
+  color: #fff; transform: none; box-shadow: 1px 0 0 rgba(255,255,255,.07);
+  background: linear-gradient(180deg, #6a35c2, #3d1585);
+  text-decoration: none;
+}
+.nav a.active {
+  color: #2a0d55; transform: none; text-shadow: 0 1px 0 rgba(255,255,255,.6);
+  background: linear-gradient(180deg, #f3e9ff, #c9a6ff);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.25);
+}
+
+.marquee {
+  border: 1px solid var(--line); border-radius: 4px; background: #12042b;
+  color: #ffd0f2; font-size: 12px; padding: 4px 0;
+}
+
+/* ---- cajas ---- */
+.box, .post {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.box-title {
+  position: relative;
+  font-size: 11px; font-weight: bold; letter-spacing: .5px; text-transform: uppercase;
+  color: #fff; text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+  padding: 7px 10px;
+  background: linear-gradient(180deg, #8b4df0, #5320a8 50%, #431794 51%, #3a1180);
+  border-bottom: 1px solid #12042b;
+}
+.box-body { padding: 10px; }
+.stat-list li { border-bottom: 1px solid rgba(255,255,255,.07); padding: 4px 0; }
+
+.profile img.avatar { border-radius: 4px; border: 4px solid #f3e9ff; box-shadow: 0 2px 6px rgba(0,0,0,.6); width: 140px; height: 140px; }
+.profile .name { font-family: var(--font-serif); font-size: 16px; color: #fff; }
+.profile .status { font-size: 11px; }
+
+.counter { font-family: "Courier New", monospace; font-size: 18px; letter-spacing: 3px; border: 1px solid #000; border-radius: 3px; box-shadow: inset 0 2px 5px rgba(0,0,0,.8); }
+
+.btn-88 { font-size: 7px; font-weight: bold; border: 1px solid #333; border-radius: 3px; color: #2a0d55; background: linear-gradient(180deg, #fff, #cfa8ff 50%, #b07cf2 51%, #d9b8ff); }
+
+/* ---- entradas del blog ---- */
+.post-head { background: linear-gradient(180deg, #5320a8, #3a1180); border-bottom: 1px solid #12042b; }
+.post-head h2 { font-size: 17px; color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,.5); }
+.post-date { font-size: 11px; color: #d8c3ff; }
+.post-body { font-size: 13px; line-height: 1.65; }
+.post-body img.inline { border: 4px solid #f3e9ff; border-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,.6); transform: rotate(2deg); }
+.post-foot { border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; }
+.tags span { font-size: 10px; border-radius: 3px; padding: 1px 7px; background: #c9a6ff; color: #2a0d55; font-weight: bold; }
+.mood { color: #ffb0ea; }
+.comments { border-top: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.25); }
+.comment { border-bottom: 1px solid rgba(255,255,255,.07); }
+.comment b, .guest-entry b { color: #ffb0ea; }
+
+/* ---- botones glossy ---- */
+.like-btn, .comment-toggle, .filter-bar button, .guest-form button, .music-play {
+  font-family: var(--font-pixel);
+  font-size: 11px; font-weight: bold;
+  color: #fff; text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+  padding: 5px 12px;
+  background: linear-gradient(180deg, #9a5cf5, #6a2fd0 50%, #5a22b8 51%, #6c32d6);
+  border: 1px solid #2a0d55;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.5);
+  cursor: pointer;
+}
+.like-btn:hover, .comment-toggle:hover, .filter-bar button:hover, .guest-form button:hover, .music-play:hover {
+  background: linear-gradient(180deg, #b27cff, #7f45e6 50%, #6e34cf 51%, #8044e6);
+}
+.like-btn.liked, .filter-bar button.active {
+  color: #2a0d55; text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  background: linear-gradient(180deg, #ffd6f5, #ff9be0 50%, #f27ccf 51%, #ff9be0);
+}
+
+/* ---- páginas ---- */
+.about-text h3 { font-size: 14px; color: #ffb0ea; border-bottom: 1px dotted var(--line); padding-bottom: 2px; }
+.gallery-item { background: #fff; padding: 6px 6px 4px; border-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,.6); }
+.gallery-item figcaption { color: #2a0d55; font-size: 11px; font-weight: bold; text-align: center; }
+.music-card { border-radius: 4px; border: 1px solid var(--line); background: rgba(0,0,0,.2); }
+.music-info h3 { font-size: 15px; color: #fff; }
+.music-artist { font-size: 12px; font-weight: bold; color: #ffb0ea; }
+.music-note { font-size: 12px; }
+.guest-form label { font-size: 11px; font-weight: bold; }
+.guest-form input, .guest-form textarea { font-family: var(--font-body); font-size: 12px; border-radius: 3px; border: 1px solid #12042b; background: #fff; color: #2a0d55; box-shadow: inset 0 1px 3px rgba(0,0,0,.35); }
+.guest-entry { border-bottom: 1px solid rgba(255,255,255,.08); }
+
+/* ---- footer gordo ---- */
+.site-footer {
+  margin: 12px 12px 0; padding: 14px; text-align: center; font-size: 11px; color: #bfa6ee;
+  background: linear-gradient(180deg, #150430, #0d0221);
+  border: 1px solid #12042b; border-top: 3px solid #7b3fe4; border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb { border-radius: 0; border: 1px solid #12042b; background: linear-gradient(90deg, #9a5cf5, #5a22b8); }
+
+@media (max-width: 760px) {
+  .site-header { grid-template-columns: 1fr; grid-template-areas: "deco" "title" "tag"; text-align: center; justify-items: center; }
+  .nav a { padding: 9px 10px; font-size: 11px; }
+}

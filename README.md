@@ -35,6 +35,8 @@ admin/                       <- panel de edición, solo en GitHub Pages (no va a
   deploy.yml                 <- SOLO a mano (botón del panel o Actions): public/ -> Neocities
 ```
 
+Estilo &laquo;web 2010&raquo; (Verdana/Georgia, degradados glossy, barra de pestañas) en `public/css/retro.css`.
+
 Todas las páginas comparten el mismo lateral (Perfil, Datos, Visitas y Botones) y un único gif arriba.
 
 El contenido vive en **`public/data/content.js`**. Las páginas se arman desde ese archivo,
