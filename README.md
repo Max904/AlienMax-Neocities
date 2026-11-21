@@ -1,6 +1,6 @@
 # ✦ AlienMax's Space Blog ✦
 
-Blog estilo 2010, morado y espacial, con Ditto caminando por la página.
+Blog estilo 2010, morado y espacial, con un Ditto shimeji (motor de Shimeji-ee portado a JavaScript) que camina, salta, trepa y se divide por la página.
 
 - **El sitio** (`public/`) se publica en [Neocities](https://neocities.org) con
   [Deploy to Neocities](https://github.com/marketplace/actions/deploy-to-neocities).
@@ -28,6 +28,10 @@ public/                      <- lo que se sube a Neocities (y la copia en GitHub
   index.html  blog.html  musica.html  sobre-mi.html  galeria.html  libro-de-visitas.html
   data/content.js            <- TODO el contenido editable (perfil, textos, blogs, música, galería)
   css/  js/  assets/         (assets/uploads/ = imágenes subidas desde el panel)
+  js/ditto.js                <- motor del Ditto shimeji (lee ditto-config.js = actions.xml + behaviors.xml)
+  js/ditto-config.js         <- generado por tools/build-ditto.py
+  js/ditto-sounds.js         <- gritos en mp3/base64 (generado), se carga solo al hacer falta
+  assets/ditto/              <- sprites Ditto y Ditto_Shiny
 admin/                       <- panel de edición, solo en GitHub Pages (no va a Neocities)
   index.html  admin.js  admin.css
 .github/workflows/
@@ -127,3 +131,13 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 | Imágenes subidas desde el panel | `public/assets/uploads/` (en el repo) |
 | Visitas, likes y libro de visitas | En el navegador de cada visitante (`localStorage`), no en el repo |
 | Borrador y token del panel | Solo en tu navegador |
+
+
+## Ditto shimeji
+
+`public/js/ditto.js` ejecuta el pack «0132 - Ditto Shimeji» con las mismas reglas del original
+(acciones, comportamientos, frecuencias, gravedad, saltos, paredes, techo, «Find a Ditto Friend», Dittosis, shiny…).
+Se puede **agarrar y lanzar** con el ratón/dedo; un clic corto muestra una frase.
+
+Ajustes arriba de `ditto.js` (`SETTINGS`): `maxMascots` (tope de Dittos, 50 como en el original), `sound` (gritos) y `phrases`.
+Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto.py RUTA/0132_-_Ditto_Shimeji`.
