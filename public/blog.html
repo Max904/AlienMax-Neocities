@@ -13,7 +13,7 @@
   <div class="wrapper">
 
     <header class="site-header">
-      <div class="header-deco"><img class="pixel" src="assets/eye.gif" alt=""><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img class="pixel" src="assets/eye.gif" alt=""><img class="pixel" src="assets/purple-purplecore.gif" alt=""><img class="pixel" src="assets/eye.gif" alt=""></div>
+      <div class="header-deco" data-top-gif="blog"></div>
       <h1 class="glow">✦ Blogs de <span data-bind="profile.name">AlienMax</span> ✦</h1>
       <p class="tagline"><span data-bind="site.blogTagline">diario de a bordo</span> <span class="blink">_</span></p>
     </header>
@@ -30,13 +30,13 @@
     <div class="columns">
       <aside class="sidebar">
         <div class="box">
-          <div class="box-title">★ AUTOR ★</div>
-          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Ánimo: <span style="color:var(--pink)" data-bind="profile.mood"></span></p></div></div>
+          <div class="box-title">★ MI PERFIL ★</div>
+          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Estado: <span style="color:var(--alien-green)" data-bind="profile.status"></span></p></div></div>
         </div>
 
         <div class="box">
-          <div class="box-title">✦ ARCHIVO ✦</div>
-          <div class="box-body"><ul class="stat-list" id="archive"></ul></div>
+          <div class="box-title">♥ DATOS ♥</div>
+          <div class="box-body"><ul class="stat-list"><li>Planeta: <span data-bind="profile.planet"></span></li><li>Color: <span data-bind="profile.color"></span></li><li>Hora galáctica: <span id="clock"></span></li></ul></div>
         </div>
 
         <div class="box">
@@ -44,10 +44,17 @@
           <div class="box-body"><div class="counter" id="visit-counter">0001337</div></div>
         </div>
 
-        <div class="box pagegif" data-page-gif="blog"></div>
+        <div class="box">
+          <div class="box-title">♪ BOTONES ♪</div>
+          <div class="box-body"><div class="buttons-88"><div class="btn-88">ALIEN POWER</div><div class="btn-88">BEST IN PURPLE</div><div class="btn-88">NO HUMANS</div></div></div>
+        </div>
       </aside>
 
       <main class="main">
+        <div class="box">
+          <div class="box-title">✦ ARCHIVO ✦</div>
+          <div class="box-body"><ul class="stat-list" id="archive"></ul></div>
+        </div>
         <div class="box filter-bar" id="filter-bar"></div>
         <div id="posts" class="main"></div>
       </main>
@@ -65,7 +72,7 @@
   <script src="js/page-gifs.js"></script>
   <script src="js/data-bind.js"></script>
   <script src="js/render-blog.js"></script>
-  <script src="js/render-pagegif.js"></script>
+  <script src="js/render-gifs.js"></script>
   <script src="js/main.js"></script>
   <script src="js/ditto.js"></script>
 </body>

@@ -38,7 +38,8 @@
   margin-bottom: 8px;
 }
 
-.header-deco img { height: 50px; }
+/* un solo gif arriba (se elige en el panel) */
+.header-deco img { height: 90px; width: auto; max-width: 100%; }
 
 /* ---------- navegación ---------- */
 .nav {
@@ -191,7 +192,7 @@
   .nav a { font-size: 9px; padding: 8px 10px; }
 }
 
-/* ---------- gif de cada pestaña (js/render-pagegif.js) ---------- */
+/* ---------- cuadro grande del inicio (js/render-gifs.js) ---------- */
 .pagegif .box-body { text-align: center; }
 
 .pagegif img {

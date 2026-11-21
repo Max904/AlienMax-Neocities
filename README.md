@@ -35,6 +35,8 @@ admin/                       <- panel de edición, solo en GitHub Pages (no va a
   deploy.yml                 <- SOLO a mano (botón del panel o Actions): public/ -> Neocities
 ```
 
+Todas las páginas comparten el mismo lateral (Perfil, Datos, Visitas y Botones) y un único gif arriba.
+
 El contenido vive en **`public/data/content.js`**. Las páginas se arman desde ese archivo,
 así que para cambiar textos, entradas, música o imágenes no hace falta tocar el HTML.
 
@@ -80,9 +82,11 @@ Pestañas:
 - **Música**: canciones con portada, nota y enlace. Si el enlace es de YouTube se puede reproducir en la página.
   Al elegir la portada se muestran las carátulas que ya usan otras canciones, para repetir la del mismo álbum, y las imágenes ya subidas al repo.
 - **Galería**: imágenes con texto, y subida de imágenes nuevas (van a `public/assets/uploads/`).
-- **Gifs por pestaña**: elige el gif (o imagen) de Inicio, Blogs, Música, Sobre mí, Galería y Libro de visitas.
-  Puedes subir uno nuevo, escoger uno ya subido, ponerle un título al cuadro o quitarlo. Por defecto el gif de aliens
-  solo está en el Inicio. Se guarda en `pageGifs` de `content.js`; los valores originales están en `public/js/page-gifs.js`.
+- **Gifs**:
+  - *Gif de la parte superior*: un solo gif, arriba de todas las páginas. Puedes subir uno nuevo, escoger uno ya subido o quitarlo.
+    Si quieres, en «Usar otro gif solo en una pestaña» le pones uno distinto a una pestaña concreta; sigue siendo uno solo por página.
+  - *Cuadro grande del inicio*: el cuadro con el gif de aliens debajo de «Última transmisión» (solo en el inicio), con título opcional.
+  Se guardan como `topGif` y `homeBox` en `content.js`; los valores originales están en `public/js/page-gifs.js`.
 - **Guardar y publicar**: conexión con GitHub y los dos pasos.
 
 La barra de arriba indica en qué punto estás:

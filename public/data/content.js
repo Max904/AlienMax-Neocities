@@ -1,6 +1,6 @@
 window.SITE = {
   "site": {
-    "title": "Test",
+    "title": "AlienMax's Space Blog",
     "tagline": "transmitiendo desde la galaxia morada",
     "blogTagline": "diario de a bordo, fecha estelar 2010",
     "marquee": "✦ bienvenid@ a mi blog espacial ✦ i hope the aliens believe in me ✦ no olvides dejar tu mensaje en el libro de visitas ✦ ¡haz click en Ditto! ✦"
@@ -8,7 +8,6 @@ window.SITE = {
   "profile": {
     "name": "AlienMax",
     "status": "en órbita 🛸",
-    "mood": "soñador 💭",
     "planet": "Tierra (por ahora)",
     "color": "morado",
     "avatar": "assets/alienmax.gif"
@@ -141,30 +140,19 @@ window.SITE = {
       "caption": "Corazón"
     }
   ],
-  "pageGifs": {
-    "home": {
-      "src": "assets/space-alien.gif",
-      "title": "👽 SEÑAL DEL ESPACIO"
-    },
-    "blog": {
-      "src": "assets/flower.gif",
-      "title": ""
-    },
-    "music": {
-      "src": "assets/cat-cat-licking.gif",
-      "title": ""
-    },
-    "about": {
-      "src": "assets/eye.gif",
-      "title": ""
-    },
-    "gallery": {
-      "src": "",
-      "title": ""
-    },
-    "guestbook": {
-      "src": "assets/flower.gif",
-      "title": ""
+  "topGif": {
+    "src": "assets/flower.gif",
+    "pages": {
+      "home": "",
+      "blog": "",
+      "music": "",
+      "about": "",
+      "gallery": "",
+      "guestbook": ""
     }
+  },
+  "homeBox": {
+    "src": "assets/space-alien.gif",
+    "title": "👽 SEÑAL DEL ESPACIO"
   }
 };

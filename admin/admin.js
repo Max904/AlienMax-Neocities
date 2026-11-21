@@ -34,15 +34,13 @@
     d.posts = d.posts || [];
     d.music = d.music || [];
     d.gallery = d.gallery || [];
-    // gif de cada pestaña: si falta, se usan los valores por defecto (js/page-gifs.js)
-    const PG = window.PAGE_GIFS || { pages: [], defaults: {} };
-    d.pageGifs = d.pageGifs || {};
-    PG.pages.forEach((pg) => {
-      const cur = d.pageGifs[pg.key];
-      d.pageGifs[pg.key] = cur
-        ? { src: cur.src == null ? "" : cur.src, title: cur.title == null ? "" : cur.title }
-        : Object.assign({ src: "", title: "" }, PG.defaults[pg.key]);
-    });
+    // gifs: si falta algo se usan los valores por defecto (js/page-gifs.js)
+    const PG = window.PAGE_GIFS;
+    const t = d.topGif || {};
+    d.topGif = { src: t.src == null ? PG.defaults.topGif : t.src, pages: {} };
+    PG.pages.forEach((pg) => { d.topGif.pages[pg.key] = (t.pages && t.pages[pg.key]) || ""; });
+    d.homeBox = PG.homeBox(d); // acepta el formato antiguo pageGifs.home
+    delete d.pageGifs;
     return d;
   }
   normalize(original);
@@ -175,7 +173,9 @@
     data.music.forEach((x) => add(x.cover));
     data.gallery.forEach((x) => add(x.src));
     data.about.friends.forEach(add);
-    Object.keys(data.pageGifs).forEach((k) => add(data.pageGifs[k].src));
+    add(data.topGif.src);
+    Object.keys(data.topGif.pages).forEach((k) => add(data.topGif.pages[k]));
+    add(data.homeBox.src);
     return out;
   }
 
@@ -560,7 +560,7 @@
     blogs: { title: "📓 BLOGS", render: tabBlogs },
     musica: { title: "♪ MÚSICA RECOMENDADA", render: tabMusica },
     galeria: { title: "❀ GALERÍA", render: tabGaleria },
-    gifs: { title: "🎞 GIFS POR PESTAÑA", render: tabGifs },
+    gifs: { title: "🎞 GIFS", render: tabGifs },
     publicar: { title: "🚀 GUARDAR Y PUBLICAR", render: tabPublicar },
   };
 
@@ -574,7 +574,6 @@
       field("Texto que se desplaza (marquee)", s, "marquee", { type: "textarea", rows: 2, wide: true }),
       field("Tu nombre de usuario", p, "name"),
       field("Estado", p, "status", { hint: "Puedes usar emojis" }),
-      field("Ánimo", p, "mood"),
       field("Planeta", p, "planet"),
       field("Color favorito", p, "color"),
       field("Foto de perfil (ruta o URL)", p, "avatar", { upload: true, thumb: true })
@@ -643,30 +642,52 @@
   }
 
   function tabGifs() {
-    const P = window.PAGE_GIFS || { pages: [], defaults: {} };
-    const root = el("div", null, el("p", { class: "hint" },
-      "Elige el gif (o imagen) de cada pestaña: sube uno nuevo o escoge uno de los ya subidos. " +
-      "Si lo dejas vacío, esa pestaña no muestra ninguno. Usa «vista previa» para verlo antes de guardar."));
+    const P = window.PAGE_GIFS;
+    const top = data.topGif, hb = data.homeBox;
+    const root = el("div");
 
+    // --- gif de la parte superior: uno solo, para todas las páginas ---
+    const clearTop = el("button", { type: "button", class: "btn danger" }, "✕ Quitar gif");
+    clearTop.onclick = () => { top.src = ""; changed(); show("gifs"); };
+    const resetTop = el("button", { type: "button", class: "btn" }, "↺ Volver al original");
+    resetTop.onclick = () => { top.src = P.defaults.topGif; changed(); show("gifs"); };
+
+    root.append(
+      el("h3", { class: "sec" }, "GIF DE LA PARTE SUPERIOR"),
+      el("p", { class: "hint" }, "Un solo gif, arriba de todas las páginas. Si lo dejas vacío, no se muestra ninguno."),
+      el("div", { class: "grid-2" }, field("Gif / imagen", top, "src", { upload: true, thumb: true, wide: true })),
+      el("div", { class: "btn-row" }, clearTop, resetTop, el("a", { href: "../index.html?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
+    );
+
+    // --- opcional: otro gif solo en una pestaña ---
+    const body = el("div", { class: "item-body" },
+      el("p", { class: "hint" }, "Normalmente todas usan el gif de arriba. Aquí puedes poner otro solo en una pestaña; vacío = usa el general."));
     P.pages.forEach((pg) => {
-      const g = data.pageGifs[pg.key];
-      const clear = el("button", { type: "button", class: "btn danger" }, "✕ Quitar gif");
-      clear.onclick = () => { g.src = ""; changed(); show("gifs"); };
-      const reset = el("button", { type: "button", class: "btn" }, "↺ Volver al original");
-      reset.onclick = () => { Object.assign(g, { src: "", title: "" }, P.defaults[pg.key]); changed(); show("gifs"); };
-      const prev = el("a", { href: "../" + pg.file + "?preview=1", target: "_blank", rel: "noopener" }, "vista previa de esta pestaña");
-
-      root.append(el("details", { class: "item", open: true },
-        el("summary", null, pg.label + " — " + pg.where),
-        el("div", { class: "item-body" },
-          el("div", { class: "grid-2" },
-            field("Gif / imagen", g, "src", { upload: true, thumb: true, wide: true }),
-            field("Título del cuadro", g, "title", { wide: true, hint: "Opcional. Con título el gif va dentro de un cuadro; sin título se muestra solo." })
-          ),
-          el("div", { class: "btn-row" }, clear, reset, prev)
-        )
-      ));
+      const reset = el("button", { type: "button", class: "btn" }, "↺ Usar el general");
+      reset.onclick = () => { top.pages[pg.key] = ""; changed(); show("gifs"); };
+      body.append(
+        el("div", { class: "grid-2" }, field(pg.label, top.pages, pg.key, { upload: true, thumb: true, wide: true })),
+        el("div", { class: "btn-row" }, reset, el("a", { href: "../" + pg.file + "?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
+      );
     });
+    const anyOwn = P.pages.some((pg) => top.pages[pg.key]);
+    root.append(el("details", { class: "item", open: anyOwn }, el("summary", null, "Usar otro gif solo en una pestaña (opcional)"), body));
+
+    // --- cuadro grande del inicio ---
+    const clearBox = el("button", { type: "button", class: "btn danger" }, "✕ Quitar cuadro");
+    clearBox.onclick = () => { hb.src = ""; changed(); show("gifs"); };
+    const resetBox = el("button", { type: "button", class: "btn" }, "↺ Volver al original");
+    resetBox.onclick = () => { Object.assign(hb, P.defaults.homeBox); changed(); show("gifs"); };
+
+    root.append(
+      el("h3", { class: "sec" }, "CUADRO GRANDE DEL INICIO"),
+      el("p", { class: "hint" }, "El cuadro que aparece debajo de «Última transmisión», solo en el inicio. Si lo dejas vacío, se oculta."),
+      el("div", { class: "grid-2" },
+        field("Gif / imagen", hb, "src", { upload: true, thumb: true, wide: true }),
+        field("Título del cuadro", hb, "title", { wide: true, hint: "Opcional. Con título va dentro de un cuadro; sin título se muestra solo." })
+      ),
+      el("div", { class: "btn-row" }, clearBox, resetBox, el("a", { href: "../index.html?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
+    );
     return root;
   }
 
