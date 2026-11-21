@@ -39,6 +39,9 @@
     const t = d.topGif || {};
     d.topGif = { src: t.src == null ? PG.defaults.topGif : t.src, pages: {} };
     PG.pages.forEach((pg) => { d.topGif.pages[pg.key] = (t.pages && t.pages[pg.key]) || ""; });
+    const bg = d.backgrounds || {};
+    d.backgrounds = {};
+    PG.pages.forEach((pg) => { d.backgrounds[pg.key] = PG.backgroundFor({ backgrounds: bg }, pg.key); });
     d.homeBox = PG.homeBox(d); // acepta el formato antiguo pageGifs.home
     delete d.pageGifs;
     return d;
@@ -176,6 +179,7 @@
     add(data.topGif.src);
     Object.keys(data.topGif.pages).forEach((k) => add(data.topGif.pages[k]));
     add(data.homeBox.src);
+    Object.keys(data.backgrounds).forEach((k) => add(data.backgrounds[k]));
     return out;
   }
 
@@ -560,7 +564,7 @@
     blogs: { title: "📓 BLOGS", render: tabBlogs },
     musica: { title: "♪ MÚSICA RECOMENDADA", render: tabMusica },
     galeria: { title: "❀ GALERÍA", render: tabGaleria },
-    gifs: { title: "🎞 GIFS", render: tabGifs },
+    gifs: { title: "🎞 GIFS Y FONDOS", render: tabGifs },
     publicar: { title: "🚀 GUARDAR Y PUBLICAR", render: tabPublicar },
   };
 
@@ -643,35 +647,39 @@
 
   function tabGifs() {
     const P = window.PAGE_GIFS;
-    const top = data.topGif, hb = data.homeBox;
+    const top = data.topGif, hb = data.homeBox, bgs = data.backgrounds;
     const root = el("div");
 
-    // --- gif de la parte superior: uno solo, para todas las páginas ---
+    // --- gif general (el que usan las pestañas sin gif propio) ---
     const clearTop = el("button", { type: "button", class: "btn danger" }, "✕ Quitar gif");
     clearTop.onclick = () => { top.src = ""; changed(); show("gifs"); };
     const resetTop = el("button", { type: "button", class: "btn" }, "↺ Volver al original");
     resetTop.onclick = () => { top.src = P.defaults.topGif; changed(); show("gifs"); };
-
     root.append(
-      el("h3", { class: "sec" }, "GIF DE LA PARTE SUPERIOR"),
-      el("p", { class: "hint" }, "Un solo gif, arriba de todas las páginas. Si lo dejas vacío, no se muestra ninguno."),
+      el("h3", { class: "sec" }, "GIF GENERAL DE ARRIBA"),
+      el("p", { class: "hint" }, "Lo usan todas las pestañas que no tengan uno propio (abajo). Vacío = no se muestra ninguno."),
       el("div", { class: "grid-2" }, field("Gif / imagen", top, "src", { upload: true, thumb: true, wide: true })),
-      el("div", { class: "btn-row" }, clearTop, resetTop, el("a", { href: "../index.html?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
+      el("div", { class: "btn-row" }, clearTop, resetTop)
     );
 
-    // --- opcional: otro gif solo en una pestaña ---
-    const body = el("div", { class: "item-body" },
-      el("p", { class: "hint" }, "Normalmente todas usan el gif de arriba. Aquí puedes poner otro solo en una pestaña; vacío = usa el general."));
+    // --- por pestaña: gif de arriba + fondo ---
+    root.append(el("h3", { class: "sec" }, "POR PESTAÑA"),
+      el("p", { class: "hint" }, "Gif de arriba: vacío = usa el general. Fondo: vacío = fondo de galaxia."));
     P.pages.forEach((pg) => {
-      const reset = el("button", { type: "button", class: "btn" }, "↺ Usar el general");
-      reset.onclick = () => { top.pages[pg.key] = ""; changed(); show("gifs"); };
-      body.append(
-        el("div", { class: "grid-2" }, field(pg.label, top.pages, pg.key, { upload: true, thumb: true, wide: true })),
-        el("div", { class: "btn-row" }, reset, el("a", { href: "../" + pg.file + "?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
+      const resetTopPg = el("button", { type: "button", class: "btn" }, "↺ Usar el general");
+      resetTopPg.onclick = () => { top.pages[pg.key] = ""; changed(); show("gifs"); };
+      const noBg = el("button", { type: "button", class: "btn danger" }, "✕ Fondo de galaxia");
+      noBg.onclick = () => { bgs[pg.key] = ""; changed(); show("gifs"); };
+      const body = el("div", { class: "item-body" },
+        el("div", { class: "grid-2" },
+          field("Gif de la parte superior", top.pages, pg.key, { upload: true, thumb: true, wide: true }),
+          field("Fondo de la pestaña", bgs, pg.key, { upload: true, thumb: true, wide: true })
+        ),
+        el("div", { class: "btn-row" }, resetTopPg, noBg, el("a", { href: "../" + pg.file + "?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
       );
+      const sum = pg.label + (top.pages[pg.key] ? " · gif propio" : "") + (bgs[pg.key] ? " · fondo propio" : " · galaxia");
+      root.append(el("details", { class: "item", open: !!(top.pages[pg.key] || bgs[pg.key]) }, el("summary", null, sum), body));
     });
-    const anyOwn = P.pages.some((pg) => top.pages[pg.key]);
-    root.append(el("details", { class: "item", open: anyOwn }, el("summary", null, "Usar otro gif solo en una pestaña (opcional)"), body));
 
     // --- cuadro grande del inicio ---
     const clearBox = el("button", { type: "button", class: "btn danger" }, "✕ Quitar cuadro");

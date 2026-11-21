@@ -2,21 +2,17 @@
    data-bind.js — utilidades y enlace de datos
    Lee window.SITE (data/content.js) y rellena
    los elementos con data-bind / data-bind-src.
-   Con ?preview=1 usa el borrador guardado por el panel admin.
+   Con ?preview=1 (ver early.js) usa el borrador guardado por el panel admin.
    ============================================ */
 (function () {
-  // vista previa del borrador del panel admin
-  if (/[?&]preview=1/.test(location.search)) {
-    try {
-      const draft = localStorage.getItem("alienmax-draft");
-      if (draft) window.SITE = JSON.parse(draft);
-      document.addEventListener("DOMContentLoaded", () => {
-        const tag = document.createElement("div");
-        tag.textContent = "VISTA PREVIA DEL BORRADOR (sin publicar)";
-        tag.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999;padding:4px;text-align:center;font:12px monospace;background:#ff8be0;color:#0d0221";
-        document.body.appendChild(tag);
-      });
-    } catch (e) {}
+  // vista previa del borrador del panel admin (early.js ya cargó el borrador en window.SITE)
+  if (window.SITE_PREVIEW) {
+    document.addEventListener("DOMContentLoaded", () => {
+      const tag = document.createElement("div");
+      tag.textContent = "VISTA PREVIA DEL BORRADOR (sin publicar)";
+      tag.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999;padding:4px;text-align:center;font:12px monospace;background:#ff8be0;color:#0d0221";
+      document.body.appendChild(tag);
+    });
   }
 
   const S = window.SITE || {};

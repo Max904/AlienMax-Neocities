@@ -1,17 +1,7 @@
 /* ============================================
    blog.css — pestaña de blogs
-   Fondo: purple-water.gif
+   (el fondo de la pestaña se elige en el panel; por defecto purple-water.gif)
    ============================================ */
-
-body.page-blog {
-  background:
-    linear-gradient(180deg, rgba(13, 2, 33, 0.35), rgba(45, 11, 90, 0.35)),
-    url("../assets/purple-water.gif") center / cover fixed no-repeat;
-  image-rendering: auto;
-}
-
-/* en la pestaña de blogs el agua es la protagonista, estrellas más suaves */
-body.page-blog #starfield { opacity: 0.45; }
 
 .post {
   background: rgba(26, 6, 56, 0.9);

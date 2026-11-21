@@ -82,11 +82,12 @@ Pestañas:
 - **Música**: canciones con portada, nota y enlace. Si el enlace es de YouTube se puede reproducir en la página.
   Al elegir la portada se muestran las carátulas que ya usan otras canciones, para repetir la del mismo álbum, y las imágenes ya subidas al repo.
 - **Galería**: imágenes con texto, y subida de imágenes nuevas (van a `public/assets/uploads/`).
-- **Gifs**:
-  - *Gif de la parte superior*: un solo gif, arriba de todas las páginas. Puedes subir uno nuevo, escoger uno ya subido o quitarlo.
-    Si quieres, en «Usar otro gif solo en una pestaña» le pones uno distinto a una pestaña concreta; sigue siendo uno solo por página.
+- **Gifs y fondos**:
+  - *Gif general de arriba*: el que usan todas las pestañas que no tengan uno propio.
+  - *Por pestaña*: a cada pestaña le puedes escoger su **gif de la parte superior** (vacío = el general) y su **fondo** (vacío = fondo de galaxia).
+    Por defecto Blogs usa `purple-water.gif` de fondo; las demás, la galaxia. Los fondos pequeños se repiten como mosaico.
   - *Cuadro grande del inicio*: el cuadro con el gif de aliens debajo de «Última transmisión» (solo en el inicio), con título opcional.
-  Se guardan como `topGif` y `homeBox` en `content.js`; los valores originales están en `public/js/page-gifs.js`.
+  Se guardan como `topGif`, `backgrounds` y `homeBox` en `content.js`; los valores originales están en `public/js/page-gifs.js`.
 - **Guardar y publicar**: conexión con GitHub y los dos pasos.
 
 La barra de arriba indica en qué punto estás:

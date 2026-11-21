@@ -74,3 +74,6 @@ h1, h2, h3 { font-family: var(--font-pixel); font-weight: normal; line-height: 1
 @keyframes blink { to { visibility: hidden; } }
 
 .glow { text-shadow: 0 0 6px var(--purple-3), 0 0 14px var(--purple-2); }
+
+/* con un fondo elegido para la pestaña, las estrellas son más suaves para que se vea (js/early.js) */
+html.has-bg #starfield { opacity: 0.45; }

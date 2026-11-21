@@ -5,6 +5,7 @@
    Los valores elegidos se guardan en data/content.js:
      topGif  = { src, pages: { <pestaña>: "otro gif solo en esa pestaña" } }
      homeBox = { src, title }   (cuadro grande del inicio)
+     backgrounds = { <pestaña>: "fondo de esa pestaña" }  ("" = galaxia)
    Si falta algo, se usan los valores por defecto de aquí.
    ============================================ */
 window.PAGE_GIFS = {
@@ -19,7 +20,16 @@ window.PAGE_GIFS = {
 
   defaults: {
     topGif: "assets/flower.gif",
-    homeBox: { src: "assets/space-alien.gif", title: "👽 SEÑAL DEL ESPACIO" }
+    homeBox: { src: "assets/space-alien.gif", title: "👽 SEÑAL DEL ESPACIO" },
+    // fondo de cada pestaña; las que no aparecen aquí usan el fondo de galaxia
+    backgrounds: { blog: "assets/purple-water.gif" }
+  },
+
+  // fondo de una pestaña ("" = fondo de galaxia)
+  backgroundFor: function (site, key) {
+    const b = site && site.backgrounds;
+    const v = b && b[key];
+    return v == null ? (this.defaults.backgrounds[key] || "") : v;
   },
 
   // gif de la parte superior para una pestaña: el suyo si lo tiene, si no el general
