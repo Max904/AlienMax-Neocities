@@ -35,7 +35,7 @@ window.SITE = {
       "blog": "assets/purple-purplecore.gif",
       "music": "assets/flower.gif",
       "about": "assets/cat-cat-licking.gif",
-      "gallery": "",
+      "gallery": "assets/ufo.gif",
       "guestbook": ""
     }
   },
@@ -48,7 +48,7 @@ window.SITE = {
     "blog": "assets/purple-water.gif",
     "music": "assets/palms-bg.gif",
     "about": "assets/sky-bg.gif",
-    "gallery": "",
+    "gallery": "assets/shinypwater.gif",
     "guestbook": "assets/flowers-bg.gif"
   }
 };
