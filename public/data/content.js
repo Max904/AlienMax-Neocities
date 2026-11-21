@@ -143,10 +143,10 @@ window.SITE = {
   "topGif": {
     "src": "assets/flower.gif",
     "pages": {
-      "home": "",
-      "blog": "",
-      "music": "",
-      "about": "",
+      "home": "assets/eye.gif",
+      "blog": "assets/purple-purplecore.gif",
+      "music": "assets/flower.gif",
+      "about": "assets/cat-cat-licking.gif",
       "gallery": "",
       "guestbook": ""
     }
@@ -161,6 +161,6 @@ window.SITE = {
     "music": "assets/palms-bg.gif",
     "about": "assets/sky-bg.gif",
     "gallery": "",
-    "guestbook": ""
+    "guestbook": "assets/flowers-bg.gif"
   }
 };
