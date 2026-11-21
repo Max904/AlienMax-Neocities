@@ -1,7 +1,7 @@
 window.SITE = {
   "site": {
     "title": "Test",
-    "tagline": "transmitiendo desde la galaxia morada",
+    "tagline": "Test",
     "blogTagline": "Test",
     "marquee": "Test"
   },
