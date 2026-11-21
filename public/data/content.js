@@ -30,7 +30,7 @@ window.SITE = {
   "pageGifs": {
     "home": {
       "src": "assets/space-alien.gif",
-      "title": ""
+      "title": "I hope Aliens believe in me"
     },
     "blog": {
       "src": "assets/flower.gif",
