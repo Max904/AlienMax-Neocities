@@ -3,8 +3,10 @@
 
    - Edita window.SITE (data/content.js) con formularios.
    - Guarda un borrador en este navegador (localStorage).
-   - "Publicar" hace un commit a GitHub por API; el workflow de
-     Deploy to Neocities sube el cambio al sitio.
+   - Paso 1 "Guardar en GitHub": commit a GitHub por API; el workflow
+     pages.yml actualiza la copia en GitHub Pages para revisarla.
+   - Paso 2 "Publicar en Neocities": lanza (workflow_dispatch) el workflow
+     Deploy to Neocities con lo que ya está guardado en GitHub.
    ============================================ */
 (function () {
   "use strict";
@@ -13,6 +15,7 @@
   const CFG_KEY = "alienmax-admin-cfg";
   const CONTENT_PATH = "public/data/content.js";
   const UPLOAD_DIR = "public/assets/uploads/";
+  const PENDING_KEY = "alienmax-pending-neocities";
 
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const $ = (s, r) => (r || document).querySelector(s);
@@ -31,10 +34,23 @@
     d.posts = d.posts || [];
     d.music = d.music || [];
     d.gallery = d.gallery || [];
+    // gif de cada pestaña: si falta, se usan los valores por defecto (js/page-gifs.js)
+    const PG = window.PAGE_GIFS || { pages: [], defaults: {} };
+    d.pageGifs = d.pageGifs || {};
+    PG.pages.forEach((pg) => {
+      const cur = d.pageGifs[pg.key];
+      d.pageGifs[pg.key] = cur
+        ? { src: cur.src == null ? "" : cur.src, title: cur.title == null ? "" : cur.title }
+        : Object.assign({ src: "", title: "" }, PG.defaults[pg.key]);
+    });
     return d;
   }
   normalize(original);
   normalize(data);
+
+  // true = hay cambios guardados en GitHub que todavía no se publican en Neocities
+  let pending = false;
+  try { pending = localStorage.getItem(PENDING_KEY) === "1"; } catch (e) {}
 
   let cfg = { owner: "", repo: "", branch: "main", token: "", remember: true };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(CFG_KEY) || "{}")); } catch (e) {}
@@ -74,9 +90,9 @@
 
   function paintPill() {
     const pill = $("#dirty-pill");
-    const d = isDirty();
-    pill.textContent = d ? "Cambios sin publicar" : "Sin cambios";
-    pill.className = "pill " + (d ? "dirty" : "ok");
+    if (isDirty()) { pill.textContent = "Cambios sin guardar en GitHub"; pill.className = "pill dirty"; }
+    else if (pending) { pill.textContent = "Guardado en GitHub · falta publicar en Neocities"; pill.className = "pill warn"; }
+    else { pill.textContent = "Todo al día"; pill.className = "pill ok"; }
   }
 
   function changed() {
@@ -93,6 +109,158 @@
       if (!cfg.remember) copy.token = "";
       localStorage.setItem(CFG_KEY, JSON.stringify(copy));
     } catch (e) {}
+  }
+
+  // ---------- imágenes: rutas, biblioteca y selector ----------
+  const IMG_RE = /\.(gif|png|jpe?g|webp|svg|avif)$/i;
+  const sessionImgs = []; // subidas en esta sesión: { path, preview }
+  const lib = { loaded: false, loading: null, files: [] }; // archivos del repo: { path, name, thumb }
+
+  const baseName = (p) => String(p || "").split("/").pop();
+
+  // las rutas del sitio son relativas a public/; el panel vive en admin/, un nivel más adentro
+  function imgSrc(p) {
+    p = String(p || "");
+    return /^(https?:|data:|blob:)/i.test(p) ? p : "../" + p.replace(/^\/+/, "");
+  }
+
+  function thumbSrc(p) {
+    const s = sessionImgs.find((x) => x.path === p);
+    return s ? s.preview : imgSrc(p);
+  }
+
+  // muestra una miniatura; si la copia de Pages aún no la tiene, prueba la URL directa del repo
+  function setThumb(img, path, fallback) {
+    img.onerror = null;
+    if (!path) { img.removeAttribute("src"); return; }
+    img.onerror = () => {
+      img.onerror = null;
+      const f = fallback || (lib.files.find((x) => x.path === path) || {}).thumb;
+      if (f) img.src = f;
+    };
+    img.src = thumbSrc(path);
+  }
+
+  async function listDir(dir) {
+    const r = await api("GET", repoPath() + "/contents/" + dir.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(cfg.branch));
+    if (r.status === 404) return [];
+    if (!r.ok) throw await apiError(r);
+    const j = await r.json();
+    return (Array.isArray(j) ? j : [])
+      .filter((f) => f.type === "file" && IMG_RE.test(f.name))
+      .map((f) => ({ path: f.path.replace(/^public\//, ""), name: f.name, thumb: f.download_url || "" }));
+  }
+
+  async function loadLibrary(force) {
+    if (!configReady()) return lib;
+    if (lib.loaded && !force) return lib;
+    if (lib.loading) return lib.loading;
+    lib.loading = (async () => {
+      try {
+        const res = await Promise.all([listDir("public/assets"), listDir("public/assets/uploads")]);
+        lib.files = res[0].concat(res[1]);
+        lib.loaded = true;
+      } finally { lib.loading = null; }
+      return lib;
+    })();
+    return lib.loading;
+  }
+
+  // imágenes que el contenido ya usa en algún lado
+  function referencedImages() {
+    const out = [];
+    const add = (p) => { if (p && IMG_RE.test(String(p).split("?")[0])) out.push(String(p)); };
+    add(data.profile.avatar);
+    data.posts.forEach((x) => add(x.image));
+    data.music.forEach((x) => add(x.cover));
+    data.gallery.forEach((x) => add(x.src));
+    data.about.friends.forEach(add);
+    Object.keys(data.pageGifs).forEach((k) => add(data.pageGifs[k].src));
+    return out;
+  }
+
+  function libraryGroups() {
+    const uploads = [], site = [];
+    const put = (p, extra) => (/^assets\/uploads\//.test(p) ? uploads : site).push(Object.assign({ path: p, label: baseName(p) }, extra));
+    sessionImgs.forEach((x) => put(x.path));
+    lib.files.forEach((f) => put(f.path, { thumb: f.thumb }));
+    referencedImages().forEach((p) => put(p));
+    return [
+      { title: "Imágenes subidas desde el panel", items: uploads },
+      { title: "Imágenes del sitio", items: site },
+    ];
+  }
+
+  // carátulas que ya usan otras canciones (para repetirla en el mismo álbum)
+  function coverGroups(current) {
+    const byPath = {};
+    data.music.forEach((m) => {
+      if (m === current || !m.cover) return;
+      const label = (m.title || "sin título") + (m.artist ? " — " + m.artist : "");
+      (byPath[m.cover] = byPath[m.cover] || []).push(label);
+    });
+    return [{
+      title: "Carátulas de otras canciones (usa la misma para el mismo álbum)",
+      items: Object.keys(byPath).map((path) => ({ path: path, label: byPath[path].join(" · ") })),
+    }];
+  }
+
+  function pickThumb(it, o) {
+    const img = el("img", { alt: "" });
+    setThumb(img, it.path, it.thumb);
+    const cur = o.current ? o.current() : "";
+    const b = el("button", { type: "button", class: "thumb-btn" + (cur === it.path ? " sel" : ""), title: it.label || it.path },
+      img, el("span", null, it.label || baseName(it.path)));
+    b.onclick = () => {
+      o.onPick(it.path);
+      const box = b.closest(".picker");
+      if (box) box.querySelectorAll(".thumb-btn.sel").forEach((x) => x.classList.remove("sel"));
+      b.classList.add("sel");
+    };
+    return b;
+  }
+
+  /**
+   * Selector de imágenes ya subidas. o: { onPick(path), current(), extra() -> grupos, open, label }
+   * Grupo = { title, items: [{ path, label, thumb? }] }
+   */
+  function imagePicker(o) {
+    const det = el("details", { class: "picker" }, el("summary", null, o.label || "🖼 Elegir una imagen ya subida"));
+    const body = el("div", { class: "picker-body" });
+    det.append(body);
+    let drawn = false;
+
+    async function draw(force) {
+      drawn = true;
+      body.textContent = "Cargando…";
+      let note = "";
+      if (configReady()) {
+        try { await loadLibrary(force); } catch (e) { note = "No pude leer las imágenes del repo: " + e.message; }
+      } else {
+        note = "Conecta el panel con GitHub (pestaña Guardar y publicar) para ver también las imágenes subidas al repo.";
+      }
+      body.textContent = "";
+      const seen = new Set();
+      const groups = (o.extra ? o.extra() : []).concat(libraryGroups())
+        .map((g) => ({ title: g.title, items: g.items.filter((it) => !seen.has(it.path) && seen.add(it.path)) }))
+        .filter((g) => g.items.length);
+
+      if (note) body.append(el("p", { class: "hint" }, note));
+      groups.forEach((g) => {
+        body.append(el("h4", null, g.title));
+        body.append(el("div", { class: "thumbs" }, g.items.map((it) => pickThumb(it, o))));
+      });
+      if (!groups.length) body.append(el("p", { class: "hint" }, "Aún no hay imágenes para elegir."));
+      if (configReady()) {
+        const rf = el("button", { type: "button", class: "btn" }, "⟳ Actualizar lista");
+        rf.onclick = () => draw(true);
+        body.append(el("div", { class: "btn-row" }, rf));
+      }
+    }
+
+    det.addEventListener("toggle", () => { if (det.open && !drawn) draw(false); });
+    if (o.open) { det.open = true; if (!drawn) draw(false); }
+    return det;
   }
 
   // ---------- campos ----------
@@ -125,8 +293,15 @@
     let thumb = null;
     if (o.thumb) {
       thumb = el("img", { class: "thumb", alt: "" });
-      if (obj[key]) thumb.src = obj[key];
+      setThumb(thumb, obj[key]);
     }
+
+    const setValue = (path) => {
+      obj[key] = path;
+      input.value = path;
+      if (thumb) setThumb(thumb, path);
+      changed();
+    };
 
     input.addEventListener("input", () => {
       let v = input.value;
@@ -135,7 +310,7 @@
       else if (type === "comments") v = parseComments(v);
       else if (type === "number") v = parseInt(v || "0", 10) || 0;
       obj[key] = v;
-      if (thumb) thumb.src = v || "";
+      if (thumb) setThumb(thumb, v);
       changed();
     });
 
@@ -143,19 +318,17 @@
     if (o.hint) parts.push(el("small", null, o.hint));
 
     if (o.upload) {
-      const up = uploadButton("⬆ Subir imagen", (path) => {
-        obj[key] = path;
-        input.value = path;
-        if (thumb) thumb.src = path;
-        changed();
-      });
-      parts.push(el("div", { class: "input-row" }, input, up));
+      parts.push(el("div", { class: "input-row" }, input, uploadButton("⬆ Subir imagen", setValue)));
     } else {
       parts.push(input);
     }
     if (thumb) parts.push(thumb);
 
-    return el("label", { class: "f" + (o.wide ? " wide" : "") }, parts);
+    const wrap = el("div", { class: "fw" + (o.wide ? " wide" : "") }, el("label", { class: "f" }, parts));
+    if (o.upload) {
+      wrap.append(imagePicker({ onPick: setValue, current: () => obj[key], extra: o.pick, open: o.pickOpen, label: o.pickLabel }));
+    }
+    return wrap;
   }
 
   // ---------- subida de imágenes (commit a GitHub) ----------
@@ -166,7 +339,7 @@
     file.onchange = async () => {
       const f = file.files[0];
       if (!f) return;
-      if (!configReady()) { alert("Primero configura GitHub en la pestaña Publicar."); file.value = ""; return; }
+      if (!configReady()) { alert("Primero configura GitHub en la pestaña Guardar y publicar."); file.value = ""; return; }
       btn.disabled = true;
       const old = btn.textContent;
       btn.textContent = "Subiendo…";
@@ -174,7 +347,10 @@
         const safe = Date.now().toString(36) + "-" + f.name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
         const b64 = await readAsBase64(f);
         await putFile(UPLOAD_DIR + safe, b64, "Subir imagen " + safe);
-        onDone("assets/uploads/" + safe);
+        const path = "assets/uploads/" + safe;
+        sessionImgs.unshift({ path: path, preview: "data:" + (f.type || "image/png") + ";base64," + b64 });
+        lib.loaded = false; // el selector vuelve a leer el repo la próxima vez
+        onDone(path);
       } catch (err) {
         alert("No se pudo subir la imagen:\n" + err.message);
       } finally {
@@ -216,7 +392,7 @@
       401: "El token no es válido o venció.",
       403: "El token no tiene permiso (necesita Contents: Read and write) o se alcanzó un límite.",
       404: "No se encontró el repo, la rama o la ruta. Si el repo es privado, revisa que el token tenga acceso a él.",
-      409: "Conflicto: el archivo cambió en GitHub mientras editabas.",
+      409: "Conflicto: el archivo cambió en GitHub mientras editabas. Usa «Cargar última versión de GitHub».",
       422: "GitHub rechazó el cambio.",
     };
     return new Error("GitHub respondió " + res.status + (msg ? " (" + msg + ")" : "") + ". " + (hints[res.status] || ""));
@@ -245,6 +421,102 @@
   }
 
   function serialize() { return "window.SITE = " + JSON.stringify(data, null, 2) + ";\n"; }
+
+  // ---------- Actions: ejecuciones, estado y sincronización ----------
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const repoPath = () => "/repos/" + encodeURIComponent(cfg.owner) + "/" + encodeURIComponent(cfg.repo);
+  const pagesUrl = () => "https://" + cfg.owner.toLowerCase() + ".github.io/" +
+    (cfg.repo.toLowerCase() === cfg.owner.toLowerCase() + ".github.io" ? "" : cfg.repo + "/");
+
+  async function listRuns(file, query) {
+    const r = await api("GET", repoPath() + "/actions/workflows/" + file + "/runs?" + query);
+    if (!r.ok) throw await apiError(r);
+    return (await r.json()).workflow_runs || [];
+  }
+
+  // espera a que aparezca y termine una ejecución; find(runs) devuelve la que buscamos
+  async function watchRun(file, query, find, onTick) {
+    for (let i = 0; i < 60; i++) {
+      const run = find(await listRuns(file, query));
+      onTick(run || null);
+      if (run && run.status === "completed") return run;
+      await sleep(4000);
+    }
+    return null;
+  }
+
+  function setPending(v) {
+    pending = !!v;
+    try { localStorage.setItem(PENDING_KEY, pending ? "1" : "0"); } catch (e) {}
+    paintPill();
+  }
+
+  const fmtWhen = (iso) => (iso ? new Date(iso).toLocaleString("es-CL", { dateStyle: "short", timeStyle: "short" }) : "?");
+
+  let statusEl = null;
+
+  // compara el último cambio del sitio en GitHub con el último deploy exitoso a Neocities
+  async function refreshStatus() {
+    if (!configReady()) return;
+    const lines = [];
+    try {
+      const cm = await api("GET", repoPath() + "/commits?sha=" + encodeURIComponent(cfg.branch) + "&path=public&per_page=1");
+      if (!cm.ok) throw await apiError(cm);
+      const last = (await cm.json())[0];
+      if (last) lines.push("GitHub: último cambio del sitio el " + fmtWhen(last.commit.committer.date) + " (" + last.sha.slice(0, 7) + ").");
+
+      let runs = null;
+      try { runs = await listRuns("deploy.yml", "status=success&per_page=1"); }
+      catch (e) { lines.push("Neocities: no pude comprobarlo (el token necesita Actions en Read and write)."); }
+
+      if (runs && last) {
+        const dep = runs[0];
+        if (!dep) {
+          setPending(true);
+          lines.push("Neocities: todavía no se ha publicado desde el panel.");
+        } else {
+          const cmp = await api("GET", repoPath() + "/compare/" + dep.head_sha + "..." + last.sha);
+          if (cmp.ok) {
+            const c = await cmp.json();
+            setPending(c.status === "ahead" || c.status === "diverged");
+            lines.push(pending
+              ? "Neocities: hay cambios guardados en GitHub que aún no se publican (último deploy: " + fmtWhen(dep.updated_at) + ")."
+              : "Neocities: al día (último deploy: " + fmtWhen(dep.updated_at) + ").");
+          }
+        }
+      }
+    } catch (e) { lines.push("No pude leer el estado: " + e.message); }
+    if (statusEl) statusEl.textContent = lines.join("\n") || "Sin información.";
+  }
+
+  // lee public/data/content.js directo del repo (la copia de Pages puede estar en caché)
+  async function fetchLatest() {
+    const r = await fetch("https://api.github.com" + repoPath() + "/contents/" + CONTENT_PATH.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(cfg.branch), {
+      headers: { Accept: "application/vnd.github.raw+json", Authorization: "Bearer " + cfg.token },
+      cache: "no-store",
+    });
+    if (!r.ok) throw await apiError(r);
+    const txt = await r.text();
+    return normalize(JSON.parse(txt.replace(/^\s*window\.SITE\s*=\s*/, "").replace(/;\s*$/, "")));
+  }
+
+  // original = lo que hay en GitHub; data = lo que se edita (se conserva el borrador si lo hay)
+  async function syncFromGitHub(force) {
+    const latest = await fetchLatest();
+    const wasClean = JSON.stringify(data) === JSON.stringify(original);
+    original = latest;
+    let replaced = false;
+    if (wasClean || force) { data = clone(latest); replaced = true; }
+    if (!isDirty()) {
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      $("#draft-banner").hidden = true;
+    }
+    paintPill();
+    if (replaced) {
+      const active = document.querySelector("#admin-tabs a.active[data-tab]");
+      if (!active || active.dataset.tab !== "publicar") show(active ? active.dataset.tab : "sitio");
+    }
+  }
 
   // ---------- listas editables ----------
   function listPanel(arr, o) {
@@ -288,7 +560,8 @@
     blogs: { title: "📓 BLOGS", render: tabBlogs },
     musica: { title: "♪ MÚSICA RECOMENDADA", render: tabMusica },
     galeria: { title: "❀ GALERÍA", render: tabGaleria },
-    publicar: { title: "🚀 PUBLICAR", render: tabPublicar },
+    gifs: { title: "🎞 GIFS POR PESTAÑA", render: tabGifs },
+    publicar: { title: "🚀 GUARDAR Y PUBLICAR", render: tabPublicar },
   };
 
   function tabSitio() {
@@ -346,7 +619,12 @@
         field("Canción / álbum", m, "title"),
         field("Artista", m, "artist"),
         field("Enlace", m, "url", { wide: true, hint: "Si es de YouTube se podrá reproducir en la página" }),
-        field("Portada (opcional)", m, "cover", { upload: true, thumb: true, wide: true }),
+        field("Portada (opcional)", m, "cover", {
+          upload: true, thumb: true, wide: true,
+          pick: () => coverGroups(m),
+          pickOpen: coverGroups(m)[0].items.length > 0,
+          pickLabel: "♪ Reusar la carátula de otra canción o elegir una ya subida",
+        }),
         field("Por qué la recomiendas", m, "note", { type: "textarea", rows: 3, wide: true }),
       ],
     });
@@ -364,24 +642,60 @@
     });
   }
 
+  function tabGifs() {
+    const P = window.PAGE_GIFS || { pages: [], defaults: {} };
+    const root = el("div", null, el("p", { class: "hint" },
+      "Elige el gif (o imagen) de cada pestaña: sube uno nuevo o escoge uno de los ya subidos. " +
+      "Si lo dejas vacío, esa pestaña no muestra ninguno. Usa «vista previa» para verlo antes de guardar."));
+
+    P.pages.forEach((pg) => {
+      const g = data.pageGifs[pg.key];
+      const clear = el("button", { type: "button", class: "btn danger" }, "✕ Quitar gif");
+      clear.onclick = () => { g.src = ""; changed(); show("gifs"); };
+      const reset = el("button", { type: "button", class: "btn" }, "↺ Volver al original");
+      reset.onclick = () => { Object.assign(g, { src: "", title: "" }, P.defaults[pg.key]); changed(); show("gifs"); };
+      const prev = el("a", { href: "../" + pg.file + "?preview=1", target: "_blank", rel: "noopener" }, "vista previa de esta pestaña");
+
+      root.append(el("details", { class: "item", open: true },
+        el("summary", null, pg.label + " — " + pg.where),
+        el("div", { class: "item-body" },
+          el("div", { class: "grid-2" },
+            field("Gif / imagen", g, "src", { upload: true, thumb: true, wide: true }),
+            field("Título del cuadro", g, "title", { wide: true, hint: "Opcional. Con título el gif va dentro de un cuadro; sin título se muestra solo." })
+          ),
+          el("div", { class: "btn-row" }, clear, reset, prev)
+        )
+      ));
+    });
+    return root;
+  }
+
+  function runLabel(r) {
+    if (r.status === "queued" || r.status === "waiting" || r.status === "pending") return "en cola…";
+    if (r.status !== "completed") return "ejecutándose…";
+    return r.conclusion === "success" ? "lista ✔" : "terminó con error (" + r.conclusion + ")";
+  }
+
+  function sayTo(log, msg, cls, link) {
+    log.className = "log" + (cls ? " " + cls : "");
+    log.textContent = msg;
+    if (link) log.append(document.createTextNode("\n"), el("a", { href: link.href, target: "_blank", rel: "noopener" }, link.text));
+  }
+
   function tabPublicar() {
     const root = el("div");
     root.append(
       el("p", { class: "hint" },
-        "Aquí conectas el panel con tu repo de GitHub. Al publicar se hace un commit a ",
-        el("code", null, CONTENT_PATH),
-        " y el workflow de Deploy to Neocities actualiza el sitio (tarda uno o dos minutos)."
+        "Se publica en dos pasos: primero guardas en GitHub y revisas la copia en GitHub Pages; " +
+        "cuando todo se vea bien, la subes a Neocities."
       )
     );
 
     const form = el("div", { class: "grid-2" },
-      field("Usuario u organización de GitHub", cfg, "owner", { }),
+      field("Usuario u organización de GitHub", cfg, "owner"),
       field("Nombre del repo", cfg, "repo"),
       field("Rama", cfg, "branch"),
-      (() => {
-        const lab = field("Token de GitHub", cfg, "token", { type: "password", hint: "Token fine-grained solo para este repo, con Contents: Read and write" });
-        return lab;
-      })()
+      field("Token de GitHub", cfg, "token", { type: "password", hint: "Fine-grained, solo este repo: Contents y Actions en Read and write" })
     );
     // los datos de conexión no son contenido del sitio: guardarlos aparte
     form.querySelectorAll("input").forEach((i) => i.addEventListener("input", saveCfg));
@@ -390,55 +704,149 @@
     remember.checked = !!cfg.remember;
     remember.onchange = () => { cfg.remember = remember.checked; saveCfg(); };
 
-    const log = el("div", { class: "log" }, "Listo.");
-    const say = (msg, cls) => { log.className = "log" + (cls ? " " + cls : ""); log.textContent = msg; };
-
+    const logConn = el("div", { class: "log" }, "Listo.");
     const test = el("button", { type: "button", class: "btn" }, "Probar conexión");
     test.onclick = async () => {
-      if (!configReady()) return say("Completa usuario, repo, rama y token.", "err");
-      say("Probando…");
+      if (!configReady()) return sayTo(logConn, "Completa usuario, repo, rama y token.", "err");
+      sayTo(logConn, "Probando…");
       try {
-        const r = await api("GET", "/repos/" + encodeURIComponent(cfg.owner) + "/" + encodeURIComponent(cfg.repo));
+        const r = await api("GET", repoPath());
         if (!r.ok) throw await apiError(r);
         const j = await r.json();
         const canPush = j.permissions && j.permissions.push;
-        say("Conectado a " + j.full_name + (canPush ? ". El token puede escribir." : ". ¡Ojo! El token no parece poder escribir."), canPush ? "ok" : "err");
-      } catch (e) { say(e.message, "err"); }
+        let msg = "Conectado a " + j.full_name + (canPush ? ". El token puede escribir." : ". ¡Ojo! El token no parece poder escribir.");
+        let ok = !!canPush;
+        try { await listRuns("deploy.yml", "per_page=1"); msg += "\nActions: el token puede leer las ejecuciones."; }
+        catch (e) { ok = false; msg += "\n¡Ojo! No puedo leer Actions: agrega el permiso Actions (Read and write) al token. Sin eso no podré lanzar ni seguir el deploy a Neocities."; }
+        sayTo(logConn, msg, ok ? "ok" : "err");
+        refreshStatus();
+      } catch (e) { sayTo(logConn, e.message, "err"); }
     };
 
-    const publish = el("button", { type: "button", class: "btn go" }, "🚀 Publicar cambios");
-    publish.onclick = async () => {
-      if (!configReady()) return say("Completa usuario, repo, rama y token.", "err");
-      if (!isDirty()) return say("No hay cambios que publicar.");
-      publish.disabled = true;
-      say("Publicando…");
+    const reload = el("button", { type: "button", class: "btn" }, "⟳ Cargar última versión de GitHub");
+    reload.onclick = async () => {
+      if (!configReady()) return sayTo(logConn, "Completa usuario, repo, rama y token.", "err");
+      if (isDirty() && !confirm("Tienes cambios sin guardar. ¿Reemplazarlos por la versión que está en GitHub?")) return;
       try {
-        await putFile(CONTENT_PATH, toBase64(serialize()), "Actualizar contenido desde el panel");
-        original = clone(data);
-        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-        paintPill();
-        $("#draft-banner").hidden = true;
-        say("Publicado ✔\nGitHub Actions subirá los cambios a Neocities en uno o dos minutos. Puedes ver el progreso en la pestaña Actions de tu repo.", "ok");
-      } catch (e) { say(e.message, "err"); }
-      publish.disabled = false;
+        await syncFromGitHub(true);
+        sayTo(logConn, "Se cargó la última versión guardada en GitHub.", "ok");
+      } catch (e) { sayTo(logConn, e.message, "err"); }
     };
 
     const dl = el("button", { type: "button", class: "btn" }, "⬇ Descargar content.js");
     dl.onclick = () => {
       const a = el("a", { href: URL.createObjectURL(new Blob([serialize()], { type: "text/javascript" })), download: "content.js" });
       document.body.append(a); a.click(); a.remove();
-      say("Descargado. Reemplaza public/data/content.js en tu repo con este archivo.");
+      sayTo(logConn, "Descargado. Reemplaza public/data/content.js en tu repo con este archivo.");
+    };
+
+    // ---- estado ----
+    const status = el("div", { class: "log" }, "Conecta el panel para ver el estado.");
+    statusEl = status;
+
+    // ---- paso 1: guardar en GitHub ----
+    const log1 = el("div", { class: "log" }, "Listo.");
+    const save = el("button", { type: "button", class: "btn go" }, "💾 Guardar en GitHub");
+    save.onclick = async () => {
+      if (!configReady()) return sayTo(log1, "Completa usuario, repo, rama y token.", "err");
+      if (!isDirty()) return sayTo(log1, "No hay cambios nuevos que guardar.");
+      save.disabled = true;
+      sayTo(log1, "Guardando en GitHub…");
+      try {
+        const res = await putFile(CONTENT_PATH, toBase64(serialize()), "Actualizar contenido desde el panel");
+        original = clone(data);
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        setPending(true);
+        $("#draft-banner").hidden = true;
+
+        const sha = res && res.commit && res.commit.sha;
+        const base = "Guardado en GitHub ✔" + (sha ? " (commit " + sha.slice(0, 7) + ")" : "") + ".\n";
+        if (!sha) { sayTo(log1, base + "Revisa la pestaña Actions para ver cuándo se actualiza la copia.", "ok"); return; }
+
+        sayTo(log1, base + "Copia en GitHub Pages: esperando que empiece…");
+        let run = null;
+        try {
+          run = await watchRun("pages.yml", "head_sha=" + sha + "&per_page=1", (rs) => rs[0],
+            (r) => sayTo(log1, base + "Copia en GitHub Pages: " + (r ? runLabel(r) : "esperando que empiece…")));
+        } catch (e) {
+          return sayTo(log1, base + "No pude seguir el avance (" + e.message + "). Revisa la pestaña Actions de tu repo.");
+        }
+        if (!run) return sayTo(log1, base + "Sigue en proceso. Revisa la pestaña Actions de tu repo.");
+        if (run.conclusion === "success") {
+          sayTo(log1, base + "La copia en GitHub Pages ya está actualizada ✔\nRevísala; si todo está bien, pasa al paso 2.\n(Si ves la versión anterior, recarga con Ctrl+F5.)", "ok", { href: pagesUrl(), text: "→ abrir la copia en GitHub Pages" });
+        } else {
+          sayTo(log1, base + "La copia en GitHub Pages falló (" + run.conclusion + ").", "err", { href: run.html_url, text: "→ ver qué pasó en Actions" });
+        }
+      } catch (e) { sayTo(log1, e.message, "err"); }
+      finally { save.disabled = false; refreshStatus(); }
+    };
+
+    // ---- paso 2: publicar en Neocities ----
+    const log2 = el("div", { class: "log" }, "Listo.");
+    const neo = el("button", { type: "button", class: "btn go" }, "🚀 Publicar en Neocities");
+    neo.onclick = async () => {
+      if (!configReady()) return sayTo(log2, "Completa usuario, repo, rama y token.", "err");
+      if (isDirty() && !confirm("Tienes cambios que aún no guardaste en GitHub; esos NO se publicarán en Neocities. ¿Continuar igual?")) return;
+      neo.disabled = true;
+      sayTo(log2, "Lanzando el deploy a Neocities…");
+      try {
+        let prevId = 0;
+        try { const rs = await listRuns("deploy.yml", "event=workflow_dispatch&per_page=1"); prevId = rs[0] ? rs[0].id : 0; } catch (e) {}
+
+        const r = await api("POST", repoPath() + "/actions/workflows/deploy.yml/dispatches", { ref: cfg.branch });
+        if (!r.ok) {
+          const e = await apiError(r);
+          if (r.status === 422) e.message += " Probablemente el deploy.yml de tu repo es la versión antigua: sube la nueva (debe tener workflow_dispatch).";
+          else if (r.status === 403 || r.status === 404) e.message += " Revisa que el token tenga el permiso Actions (Read and write) y que .github/workflows/deploy.yml exista en la rama.";
+          throw e;
+        }
+
+        sayTo(log2, "Deploy lanzado. Esperando que empiece…");
+        let run = null;
+        try {
+          run = await watchRun("deploy.yml", "event=workflow_dispatch&per_page=5", (rs) => rs.find((x) => x.id > prevId),
+            (x) => sayTo(log2, "Deploy a Neocities: " + (x ? runLabel(x) : "esperando que empiece…")));
+        } catch (e) {
+          return sayTo(log2, "Deploy lanzado, pero no pude seguir el avance (" + e.message + "). Revisa la pestaña Actions de tu repo.");
+        }
+        if (!run) return sayTo(log2, "Sigue en proceso. Revisa la pestaña Actions de tu repo.");
+        if (run.conclusion === "success") {
+          setPending(false);
+          sayTo(log2, "Publicado en Neocities ✔", "ok");
+        } else {
+          sayTo(log2, "El deploy a Neocities falló (" + run.conclusion + ").\nSi es la primera vez, revisa que exista el secret NEOCITIES_API_TOKEN.", "err", { href: run.html_url, text: "→ ver qué pasó en Actions" });
+        }
+      } catch (e) { sayTo(log2, e.message, "err"); }
+      finally { neo.disabled = false; refreshStatus(); }
     };
 
     root.append(
       form,
       el("label", { class: "check", style: "margin-top:10px" }, remember, "Recordar el token en este navegador (no lo uses en un computador compartido)"),
-      el("div", { class: "btn-row" }, test, publish, dl),
-      log,
+      el("div", { class: "btn-row" }, test, reload, dl),
+      logConn,
+
+      el("h3", { class: "sec" }, "ESTADO"),
+      status,
+
+      el("div", { class: "step" },
+        el("h3", null, "PASO 1 · GUARDAR EN GITHUB Y REVISAR"),
+        el("p", { class: "hint" }, "Guarda tus cambios en el repo y actualiza la copia en GitHub Pages. Neocities no se toca."),
+        el("div", { class: "btn-row", style: "margin-top:0" }, save),
+        log1
+      ),
+      el("div", { class: "step" },
+        el("h3", null, "PASO 2 · PUBLICAR EN NEOCITIES"),
+        el("p", { class: "hint" }, "Sube a Neocities lo que ya está guardado en GitHub. Hazlo después de revisar la copia."),
+        el("div", { class: "btn-row", style: "margin-top:0" }, neo),
+        log2
+      ),
       el("p", { class: "hint", style: "margin-top:12px" },
-        "El token solo se guarda en este navegador y solo se envía a api.github.com. Crea uno en GitHub: Settings → Developer settings → Personal access tokens → Fine-grained tokens, limitado a este repo."
+        "El token solo se guarda en este navegador y solo se envía a api.github.com. Créalo en GitHub: Settings → Developer settings → Personal access tokens → Fine-grained tokens, limitado a este repo, con Contents y Actions en Read and write."
       )
     );
+
+    refreshStatus();
     return root;
   }
 
@@ -485,4 +893,10 @@
 
   paintPill();
   show("sitio");
+
+  // si el panel ya conoce el repo y el token, trae la versión real de GitHub
+  // (la copia de Pages puede estar en caché o desactualizada)
+  if (configReady()) {
+    syncFromGitHub(false).catch(() => {}).then(() => refreshStatus());
+  }
 })();

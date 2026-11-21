@@ -134,3 +134,71 @@ details.item .item-body { padding: 12px; }
 @media (max-width: 640px) {
   .grid-2 { grid-template-columns: 1fr; }
 }
+
+/* ---------- guardar y publicar ---------- */
+.pill.warn { background: var(--lilac); color: var(--space-0); }
+
+h3.sec,
+.step h3 {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--alien-green);
+  margin: 16px 0 8px;
+}
+
+.step {
+  margin-top: 16px;
+  padding: 4px 12px 12px;
+  background: rgba(13, 2, 33, 0.55);
+  border: 2px dashed var(--purple-3);
+  border-radius: 10px;
+}
+
+.step h3 { margin-top: 10px; }
+.log a { display: inline-block; margin-top: 4px; }
+
+/* ---------- selector de imágenes ya subidas ---------- */
+details.picker {
+  margin-top: 6px;
+  background: rgba(13, 2, 33, 0.5);
+  border: 2px dashed var(--purple-2);
+  border-radius: 8px;
+}
+
+details.picker > summary { padding: 6px 10px; cursor: pointer; color: var(--lilac); }
+.picker-body { padding: 4px 10px 10px; }
+
+.picker-body h4 {
+  margin: 10px 0 6px;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  font-weight: normal;
+  line-height: 1.6;
+  color: var(--alien-green);
+}
+
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.thumb-btn {
+  width: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text);
+  background: var(--space-0);
+  border: 2px solid var(--purple-2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.thumb-btn img { width: 92px; height: 92px; object-fit: contain; }
+.thumb-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thumb-btn:hover { border-color: var(--alien-green); }
+.thumb-btn.sel { border-color: var(--pink); box-shadow: 0 0 8px var(--pink); }
+
+/* sin imagen elegida no se muestra el cuadro de la miniatura */
+img.thumb:not([src]) { display: none; }

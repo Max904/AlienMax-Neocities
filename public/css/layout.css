@@ -190,3 +190,18 @@
   .columns { grid-template-columns: 1fr; }
   .nav a { font-size: 9px; padding: 8px 10px; }
 }
+
+/* ---------- gif de cada pestaña (js/render-pagegif.js) ---------- */
+.pagegif .box-body { text-align: center; }
+
+.pagegif img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.pagegif.bare { text-align: center; }
+
+/* inicio: cuadro grande en la columna principal */
+.pagegif-big img { width: min(100%, 360px); }

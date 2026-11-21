@@ -1,10 +1,11 @@
 name: Deploy to Neocities
 
-# Solo se publica cuando hay cambios en main
+# Solo se ejecuta cuando tú lo pides:
+#  - con el botón "Publicar en Neocities" del panel (admin/), o
+#  - a mano en GitHub: Actions -> Deploy to Neocities -> Run workflow.
+# Así puedes guardar cambios en GitHub, revisarlos en la copia de GitHub Pages
+# y recién después subirlos a Neocities.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency: # evita despliegues simultáneos
