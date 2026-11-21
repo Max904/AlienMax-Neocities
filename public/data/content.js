@@ -158,8 +158,8 @@ window.SITE = {
   "backgrounds": {
     "home": "",
     "blog": "assets/purple-water.gif",
-    "music": "",
-    "about": "",
+    "music": "assets/palms-bg.gif",
+    "about": "assets/sky-bg.gif",
     "gallery": "",
     "guestbook": ""
   }
