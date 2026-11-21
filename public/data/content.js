@@ -1,6 +1,6 @@
 window.SITE = {
   "site": {
-    "title": "AlienMax's Space Blog",
+    "title": "Test",
     "tagline": "transmitiendo desde la galaxia morada",
     "blogTagline": "diario de a bordo, fecha estelar 2010",
     "marquee": "✦ bienvenid@ a mi blog espacial ✦ i hope the aliens believe in me ✦ no olvides dejar tu mensaje en el libro de visitas ✦ ¡haz click en Ditto! ✦"
