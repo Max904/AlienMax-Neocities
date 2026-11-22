@@ -34,7 +34,23 @@
 
   // un nombre escrito como @usuario se convierte en enlace a usuario.neocities.org (solo ese dominio; no se verifica que sea quien dice)
   const NAME_RE = /^@([a-z0-9][a-z0-9-]{0,31})$/i;
-  function linkNames(f) {
+  // «Nombre :: enlace» = nombre con enlace propio (solo http/https)
+  function parseName(t) {
+    t = String(t || "").trim();
+    let m = NAME_RE.exec(t);
+    if (m) { const u = m[1].toLowerCase(); return { label: u, url: "https://" + u + ".neocities.org/", title: u + ".neocities.org" }; }
+    m = /^(.{1,40}?)\s*::\s*(\S{4,200})$/.exec(t);
+    if (!m) return null;
+    let link = m[2];
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(link)) link = "https://" + link;
+    try {
+      const u = new URL(link);
+      if (!/^https?:$/.test(u.protocol) || !u.hostname.includes(".")) return null;
+      return { label: m[1], url: u.href, title: u.hostname };
+    } catch (e) { return null; }
+  }
+
+  function linkNames(f, ident) {
     let d;
     try { d = f.contentDocument; } catch (e) { return; }
     if (!d || !d.body) return;
@@ -49,47 +65,125 @@
         const t = ((el.getAttribute("src") || "") + (el.getAttribute("href") || "") + (el.getAttribute("class") || "") + (el.getAttribute("title") || "") + (el.getAttribute("alt") || "")).toLowerCase();
         if (/\b(rss|feed|login|log-in|signin|sign-in|log in|sign in)|(rss|feed|login)[._-]/.test(t)) hide(el);
       });
+      // el campo «Nombre» del widget lo rellena la barra de identidad (y se esconde)
+      const nameIn = [...d.querySelectorAll("#HCB_comment_box input")].find((i) => (!i.type || i.type === "text") && /name|nombre/i.test((i.placeholder || "") + (i.name || "") + (i.id || ""))) ||
+        d.querySelector("#HCB_comment_box input[type=text]");
+      if (nameIn && ident) {
+        if (nameIn.value !== ident.value) {
+          nameIn.value = ident.value;
+          ["input", "change", "keyup"].forEach((ev) => nameIn.dispatchEvent(new Event(ev, { bubbles: true })));
+        }
+        nameIn.style.display = "none";
+      }
       const w = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT);
       const hits = [];
       for (let n = w.nextNode(); n; n = w.nextNode()) {
         const par = n.parentNode;
         if (!par || /^(A|SCRIPT|STYLE|TEXTAREA|INPUT)$/.test(par.nodeName)) continue;
-        const m = NAME_RE.exec(n.nodeValue.trim());
-        if (m) hits.push([n, m[1].toLowerCase()]);
+        const pn = parseName(n.nodeValue);
+        if (pn) hits.push([n, pn]);
       }
-      hits.forEach(([n, u]) => {
+      hits.forEach(([n, pn]) => {
         const a = d.createElement("a");
-        a.href = "https://" + u + ".neocities.org/";
-        a.target = "_blank"; a.rel = "noopener nofollow";
-        a.title = "Ir a " + u + ".neocities.org";
-        a.textContent = u;
+        a.href = pn.url;
+        a.target = "_blank"; a.rel = "noopener nofollow ugc";
+        a.title = "Ir a " + pn.title;
+        a.textContent = pn.label;
         n.parentNode.replaceChild(a, n);
       });
     };
     run();
+    if (ident) ident.refresh = run;
     new MutationObserver(run).observe(d.body, { childList: true, subtree: true });
+  }
+
+  // barra «Comentar como»: Anónimo / usuario de Neocities / nombre + enlace propio
+  const USER_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
+  function identityBar(host, ident) {
+    const bar = document.createElement("div");
+    bar.className = "hcb-ident";
+    bar.innerHTML =
+      '<div class="hcb-modes" role="radiogroup" aria-label="Comentar como">' +
+        '<button type="button" class="hcb-mode on" data-m="anon">👤 Anónimo</button>' +
+        '<button type="button" class="hcb-mode" data-m="nc">🛸 Usuario de Neocities</button>' +
+        '<button type="button" class="hcb-mode" data-m="custom">🔗 Nombre y enlace</button>' +
+      "</div>" +
+      '<div class="hcb-fields" data-for="nc" hidden><input type="text" class="nc-input" data-f="user" maxlength="32" placeholder="tuusuario" autocomplete="off" spellcheck="false"><span class="hcb-suf">.neocities.org</span></div>' +
+      '<div class="hcb-fields" data-for="custom" hidden><input type="text" class="nc-input" data-f="name" maxlength="40" placeholder="Tu nombre" autocomplete="off"><input type="text" class="nc-input" data-f="link" maxlength="120" placeholder="Enlace: instagram.com/tuusuario" autocomplete="off" spellcheck="false"></div>' +
+      '<div class="hcb-as fine"></div>';
+    host.appendChild(bar);
+    let mode = "anon";
+    const q = (sel) => bar.querySelector(sel);
+    const update = () => {
+      let v = "Anónimo", note = "Comentarás como Anónimo.";
+      if (mode === "nc") {
+        const u = q('[data-f=user]').value.trim().toLowerCase().replace(/^@/, "").replace(/\.neocities\.org.*$/, "");
+        if (USER_RE.test(u)) { v = "@" + u; note = "Comentarás como " + u + " (enlaza a " + u + ".neocities.org, no se verifica)."; }
+        else note = u ? "Ese usuario de Neocities no es válido: saldrás como Anónimo." : "Escribe tu usuario de Neocities (o elige Anónimo).";
+      } else if (mode === "custom") {
+        const n = q('[data-f=name]').value.trim().replace(/\s*::\s*/g, " "), l = q('[data-f=link]').value.trim();
+        if (n) {
+          const pn = l ? parseName(n + " :: " + l) : null;
+          if (pn) { v = n + " :: " + l.replace(/^https?:\/\//i, ""); note = "Comentarás como " + n + " (enlaza a " + pn.title + ")."; }
+          else { v = n; note = l ? "Ese enlace no parece válido: saldrás solo con el nombre." : "Comentarás como " + n + " (sin enlace)."; }
+        } else note = "Escribe tu nombre (y un enlace si quieres).";
+      }
+      ident.value = v;
+      q(".hcb-as").textContent = note;
+      if (ident.refresh) ident.refresh();
+    };
+    bar.addEventListener("click", (e) => {
+      const b = e.target.closest(".hcb-mode");
+      if (!b) return;
+      mode = b.dataset.m;
+      bar.querySelectorAll(".hcb-mode").forEach((x) => x.classList.toggle("on", x === b));
+      bar.querySelectorAll(".hcb-fields").forEach((x) => { x.hidden = x.dataset.for !== mode; });
+      update();
+    });
+    bar.addEventListener("input", update);
+    update();
   }
 
   function mount(host, key) {
     if (!enabled || !host || host.dataset.hcb) return;
     host.dataset.hcb = "1";
+    const ident = { value: "Anónimo" };
+    identityBar(host, ident);
     const src = H + "/jread?page=" + encodeURIComponent(key).replace("+", "%2B") +
       "&mod=" + encodeURIComponent(C.mod) + "&opts=" + encodeURIComponent(C.opts || "16798") +
       "&num=" + encodeURIComponent(C.num || 10);
     const css = C.css && /^https:\/\/www\.htmlcommentbox\.com\//.test(C.css) ? '<link rel="stylesheet" href="' + C.css + '">' : "";
     const f = document.createElement("iframe");
-    f.className = "hcb-frame"; f.title = "Comentarios"; f.scrolling = "auto";
-    f.style.cssText = "width:100%;border:0;height:480px;background:transparent";
+    f.className = "hcb-frame"; f.title = "Comentarios"; f.scrolling = "no";
+    f.style.cssText = "width:100%;border:0;height:160px;background:transparent";
     f.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><base target="_blank">' + css + "<style>" + CSS + "</style></head><body>" +
       '<div id="HCB_comment_box">Cargando comentarios…</div><script>window.hcb_user={PAGE:' + jsStr(key) + '};<\/script>' +
       '<script src=' + jsStr(src) + "><\/script></body></html>";
     host.appendChild(f);
     // altura fija con desplazamiento propio: medir el contenido hacía crecer el recuadro sin parar
-    f.addEventListener("load", () => linkNames(f));
+    // altura = parte baja del último contenido real (hojas: texto, campos, botones). Los contenedores no cuentan,
+    // así el recuadro no depende de su propio tamaño y no puede crecer solo.
+    let last = 0;
+    const fit = () => {
+      try {
+        const d = f.contentDocument, root = d.getElementById("HCB_comment_box");
+        if (!root) return;
+        let bottom = 0;
+        root.querySelectorAll("*").forEach((el) => {
+          const leaf = el.children.length === 0 || /^(TEXTAREA|INPUT|BUTTON|IMG|SELECT)$/.test(el.tagName);
+          if (!leaf || el.nodeName === "SCRIPT" || el.nodeName === "STYLE") return;
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && r.height > 0) bottom = Math.max(bottom, r.bottom);
+        });
+        const h = Math.min(1600, Math.ceil(bottom + (d.defaultView.scrollY || 0)) + 14);
+        if (h > 60 && Math.abs(h - last) > 3) { last = h; f.style.height = h + "px"; }
+      } catch (e) {}
+    };
+    f.addEventListener("load", () => { linkNames(f, ident); fit(); setInterval(fit, 500); });
   }
 
   // identificador estable del hilo (igual en GitHub Pages y en Neocities)
   const key = (id) => "https://alienmax.neocities.org/" + id;
   window.HCB = { enabled, mount, key,
-    tip: '<p class="fine">Escribe tu nombre o «Anónimo». Para mostrar tu página de Neocities, escribe <b>@tuusuario</b> como nombre: al hacerle clic irá a tuusuario.neocities.org (no se verifica).</p>' };
+    tip: "" };
 })();
