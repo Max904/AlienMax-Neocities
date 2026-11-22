@@ -1,19 +1,19 @@
 window.SITE = {
   "site": {
-    "title": "Unfinished page. Come back later!",
-    "tagline": "Test",
-    "blogTagline": "diario de a bordo, fecha estelar 2026",
-    "marquee": "Test text"
+    "title": "Purple Radio",
+    "tagline": "Transmitiendo desde la galaxia morada",
+    "blogTagline": "Diario de a bordo, fecha estelar 2026",
+    "marquee": "Página mayoritariamente lista! Feliz de poder dejar la base lista, ya puedo concentrarme en escribir para la página kjsjkjsjsj. Todo el sistema de comentarios está listo, ¡no olvides dejar tu firma!"
   },
   "profile": {
     "name": "AlienMax",
-    "status": "Testing some stuff",
+    "status": "Relajado",
     "planet": "Tierra (por ahora)",
-    "color": "morado",
+    "color": "Morado",
     "avatar": "assets/alienmax.gif"
   },
   "home": {
-    "welcome": "¡Hola! Soy AlienMax y este es mi rincón del espacio en internet. Actualmente estoy trabajando en el diseño de la pagina, así que vuelve mas tarde."
+    "welcome": "¡Hola! Soy AlienMax y este es mi rincón del espacio en internet. Aquí recomiendo canciones, hablo de mis sucesos y sentimientos."
   },
   "about": {
     "intro": "Test",
