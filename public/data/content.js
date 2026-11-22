@@ -27,7 +27,7 @@ window.SITE = {
     ],
     "motto": "I hope the aliens believe in me.",
     "friends": [
-      "https://pbs.twimg.com/profile_images/1812693760603455488/-pnzUJzr_400x400.jpg"
+      "https://x.com/XSamtheGhost_"
     ]
   },
   "posts": [
