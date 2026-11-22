@@ -11,6 +11,15 @@
 
   const S = window.SITE || {};
   const KEY = "alienmax-guestbook-pending";
+  if (window.HCB && window.HCB.enabled) {
+    // firmas con HTML Comment Box: el formulario propio se cambia por su widget
+    const wrap = form.parentNode;
+    form.remove();
+    wrap.insertAdjacentHTML("beforeend", window.HCB.tip + '<div class="hcb-host"></div>');
+    window.HCB.mount(wrap.querySelector(".hcb-host"), window.HCB.key("libro-de-visitas"));
+    list.innerHTML = (S.guestbook || []).map((e) => '<div class="guest-entry"><b>' + A.who(e) + "</b><small>" + A.fmt(e.date) + "</small><p>" + A.esc(e.message) + "</p></div>").join("");
+    return;
+  }
   const status = document.getElementById("guest-status");
   const say = (t, bad) => { status.textContent = t; status.className = "form-status" + (bad ? " bad" : ""); };
 

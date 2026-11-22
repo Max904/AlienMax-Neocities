@@ -15,14 +15,15 @@
     const tags = p.tags || [];
     const comments = p.comments || [];
     const img = U.safeUrl(p.image);
+    const HC = window.HCB && window.HCB.enabled;
     const commentsHTML =
       '<div class="comment-list" id="cl' + i + '">' + staticComments(comments) + "</div>" +
-      '<form class="comment-form" data-post="' + U.esc(p.id || "post" + i) + '" data-i="' + i + '">' +
+      (HC ? window.HCB.tip + '<div class="hcb-host" data-key="' + U.esc(window.HCB.key("blog/" + (p.id || "post" + i))) + '"></div>' : '<form class="comment-form" data-post="' + U.esc(p.id || "post" + i) + '" data-i="' + i + '">' +
         '<textarea name="text" maxlength="300" rows="2" placeholder="Escribe un comentario…" required></textarea>' +
         '<input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
         A.identityHTML("c" + i) +
         '<div class="row"><button type="submit">Comentar</button><span class="form-status"></span></div>' +
-      "</form>";
+      "</form>");
 
     return (
       '<article class="post" data-tags="' + U.esc(tags.map(U.slug).join(" ")) + '">' +
@@ -35,7 +36,7 @@
           '<div class="tags">' + tags.map((t) => "<span>" + U.esc(t) + "</span>").join("") + "</div>" +
           (p.mood ? '<span class="mood">Ánimo: ' + U.esc(p.mood) + "</span>" : "") +
           '<button class="like-btn" data-post="' + U.esc(p.id || "post" + i) + '" data-base="' + (parseInt(p.likes, 10) || 0) + '"></button>' +
-          '<button class="comment-toggle" data-target="c' + i + '">💬 comentarios (' + comments.length + ")</button>" +
+          '<button class="comment-toggle" data-target="c' + i + '">💬 comentarios' + (HC ? "" : " (" + comments.length + ")") + "</button>" +
         "</div>" +
         '<div class="comments" id="c' + i + '">' + commentsHTML + "</div>" +
       "</article>"
@@ -136,6 +137,8 @@
     btn.addEventListener("click", () => {
       const c = document.getElementById(btn.dataset.target);
       if (c) c.classList.toggle("open");
+      const host = c && c.classList.contains("open") && c.querySelector(".hcb-host");
+      if (host && window.HCB) window.HCB.mount(host, host.dataset.key);
     });
   });
 
@@ -163,7 +166,9 @@
     const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>pendiente de aprobación</small></div>");
     const approved = p.comments || [];
     const list = document.getElementById("cl" + i);
-    list.innerHTML = mine.join("") + staticComments(approved) || '<div class="comment">Aún no hay comentarios. ¡Sé el primero!</div>';
+    const none = window.HCB && window.HCB.enabled ? "" : '<div class="comment">Aún no hay comentarios. ¡Sé el primero!</div>';
+    list.innerHTML = mine.join("") + staticComments(approved) || none;
+    if (window.HCB && window.HCB.enabled) return;
     const btn = box.querySelector('.comment-toggle[data-target="c' + i + '"]');
     if (btn) btn.textContent = "💬 comentarios (" + approved.length + ")";
   }

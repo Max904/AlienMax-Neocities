@@ -51,12 +51,5 @@ window.SITE = {
     "gallery": "assets/shinypwater.gif",
     "guestbook": "assets/flowers-bg.gif"
   },
-  "guestbook": [
-    {
-      "message": "Public Sign Test Message",
-      "name": "alienmax",
-      "neocities": "alienmax",
-      "date": "2026-11-22"
-    }
-  ]
+  "guestbook": []
 };

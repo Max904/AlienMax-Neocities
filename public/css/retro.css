@@ -252,3 +252,14 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: bold; }
 .guest-entry b .anon, .comment b .anon { color: #ffb0ea; }
 .pending { opacity: .7; border-left: 3px dashed #ffb0ea; padding-left: 8px; }
 .pending small { color: #ffb0ea; font-style: italic; }
+
+/* ---- HTML Comment Box (comentarios y firmas) ---- */
+#HCB_comment_box { margin: 8px 0; color: #e8dcff; font-size: 12px; }
+#HCB_comment_box a { color: #c9a7ff; }
+#HCB_comment_box textarea, #HCB_comment_box input[type=text], #HCB_comment_box input[type=email], #HCB_comment_box input[type=url] {
+  background: #1a0a3a; color: #f0e6ff; border: 1px solid #7a4fd0; border-radius: 3px; padding: 5px; max-width: 100%; box-sizing: border-box;
+}
+#HCB_comment_box input[type=submit], #HCB_comment_box button, #HCB_comment_box .hcb-btn {
+  background: linear-gradient(#9a63ee, #5b2aa8); color: #fff; border: 1px solid #c9a7ff; border-radius: 3px; padding: 4px 12px; cursor: pointer;
+}
+#HCB_comment_box .home-desc, #HCB_comment_box .hcb-wrapper, #HCB_comment_box .hcb-comment { background: transparent !important; color: #e8dcff !important; border-color: #4a2a8a !important; }

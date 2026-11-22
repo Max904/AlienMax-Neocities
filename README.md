@@ -170,8 +170,13 @@ Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto
 ## Contadores compartidos (visitas y me gusta)
 
 `public/js/counters.js` usa [Abacus](https://abacus.jasoncameron.dev) (gratis, sin registro) para que el contador de visitas y los me gusta sean los mismos para todos.
-- **Visitas:** cada carga de página suma 1. El número parte de 0 (`START` en `main.js`); el contador se reinició usando la clave `visitas-v2`. Si no puede conectar, deja el último valor y lo explica al pasar el mouse por encima.
+- **Visitas:** cada carga de página suma 1. El número parte de 1337 (`START` en `main.js`). Si no puede conectar, deja el último valor y lo explica al pasar el mouse por encima.
 - **Me gusta:** cada navegador puede dar 1 por entrada y quitarlo con otro clic. Como Abacus solo suma, se guardan dos contadores (`like-<id>` y `unlike-<id>`) y el total es el `likes` de la entrada en el panel + me gusta − quitados.
 - Si Abacus no responde, el sitio sigue funcionando con el último valor visto.
 - Límite del servicio: 30 peticiones cada 10 s por IP (el sitio las espacia). Cualquiera podría sumar por su cuenta llamando a esa API: no es un contador a prueba de trampas.
-- Para reiniciar solo las visitas, cambia la clave `visitas-v2` en `main.js` (y la de `localStorage`). Para empezar todo de cero (visitas y me gusta), cambia `NS` en `counters.js`.
+- Para empezar de cero, cambia `NS` en `counters.js`.
+
+
+## Comentarios y firmas con HTML Comment Box
+
+Los comentarios del blog y las firmas del libro de visitas usan [HTML Comment Box](https://www.htmlcommentbox.com/): aparecen de inmediato, sin aprobación y sin commits. El código del widget está en `public/js/hcb.js` y la clave de tu cuenta (`mod`) en `public/data/social.js` → `hcb`. Cada entrada tiene su propio hilo (`blog/<id>`) y el libro de visitas el suyo. Para borrar o moderar, entra a htmlcommentbox.com con tu cuenta de Google. Con `mod` vacío vuelven los formularios con aprobación por ntfy.
