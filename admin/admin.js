@@ -509,7 +509,7 @@
   }
 
   // original = lo que hay en GitHub; data = lo que se edita (se conserva el borrador si lo hay)
-  async function syncFromGitHub(force) {
+  async function syncFromGitHub(force, quiet) {
     const latest = await fetchLatest();
     const wasClean = JSON.stringify(data) === JSON.stringify(original);
     original = latest;
@@ -520,7 +520,7 @@
       $("#draft-banner").hidden = true;
     }
     paintPill();
-    if (replaced) {
+    if (replaced && !quiet) {
       const active = document.querySelector("#admin-tabs a.active[data-tab]");
       if (!active || active.dataset.tab !== "publicar") show(active ? active.dataset.tab : "sitio");
     }
@@ -735,6 +735,16 @@
     return { kind, post: line("entrada"), name: neocities || line("nombre").slice(0, 32) || "Anónimo", neocities, text, number: issue.number, url: issue.html_url, who: issue.user && issue.user.login };
   }
 
+  // mensaje que viene en el enlace del aviso (#msg=<texto>); se lee una vez
+  let hashMsg = null;
+  try {
+    const m = /^#msg=(.+)$/.exec(location.hash);
+    if (m) {
+      hashMsg = parseIssue({ title: "", body: decodeURIComponent(m[1]) });
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch (e) {}
+
   function tabMensajes() {
     const root = el("div");
     const out = el("div", { class: "inbox" });
@@ -742,7 +752,7 @@
     const find = el("button", { type: "button", class: "btn" }, "🔄 Buscar mensajes nuevos");
 
     const closeIssue = async (n, reason) => {
-      if (!n) return true; // llegó por correo: no hay Issue que cerrar
+      if (!n) return true; // llegó por el aviso o pegado a mano: no hay Issue que cerrar
       const r = await api("PATCH", repoPath() + "/issues/" + n, { state: "closed", state_reason: reason });
       return r.ok;
     };
@@ -756,26 +766,58 @@
         el("blockquote", null, m.text)
       );
       const ok = el("button", { type: "button", class: "btn" }, "✔ Aprobar");
+      const pub = el("button", { type: "button", class: "btn go" }, "✔ Aprobar y publicar");
       const no = el("button", { type: "button", class: "btn danger" }, "✕ Descartar");
-      const done = (t) => { box.replaceChildren(el("p", { class: "hint" }, t)); };
-      ok.disabled = m.kind === "comentario" && !post;
-      ok.onclick = async () => {
-        ok.disabled = no.disabled = true;
+      const plog = el("div", { class: "log", hidden: true });
+      const add = () => {
         const base = { name: m.name, neocities: m.neocities, date: todayISO() };
         if (m.kind === "firma") data.guestbook.unshift(Object.assign({ message: m.text }, base));
-        else (post.comments = post.comments || []).push(Object.assign({ text: m.text }, base));
+        else (post = data.posts.find((x) => x.id === m.post)).comments = (post.comments || []).concat(Object.assign({ text: m.text }, base));
         changed();
+      };
+      // aprobar + guardar en GitHub + publicar en Neocities, todo con un clic
+      pub.onclick = async () => {
+        if (!configReady()) { plog.hidden = false; return sayTo(plog, "Conecta el panel primero (pestaña «Guardar y publicar»: usuario, repo y token).", "err"); }
+        ok.disabled = pub.disabled = no.disabled = true; plog.hidden = false;
+        if (m === hashMsg) hashMsg = null; // ya se está procesando: que no reaparezca
+        try {
+          if (!isDirty()) { sayTo(plog, "Cargando la última versión de GitHub…"); await syncFromGitHub(true, true); post = m.kind === "comentario" ? data.posts.find((x) => x.id === m.post) : null; }
+          if (m.kind === "comentario" && !post) throw new Error("La entrada de ese comentario ya no existe.");
+          add();
+          sayTo(plog, "Guardando en GitHub…");
+          await putFile(CONTENT_PATH, toBase64(serialize()), (m.kind === "firma" ? "Firma" : "Comentario") + " aprobado desde el panel");
+          original = clone(data);
+          try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+          $("#draft-banner").hidden = true;
+          closeIssue(m.number, "completed").catch(() => {});
+          sayTo(plog, "Guardado ✔ Publicando en Neocities…");
+          let prevId = 0;
+          try { const rs = await listRuns("deploy.yml", "event=workflow_dispatch&per_page=1"); prevId = rs[0] ? rs[0].id : 0; } catch (e) {}
+          const r = await api("POST", repoPath() + "/actions/workflows/deploy.yml/dispatches", { ref: cfg.branch });
+          if (!r.ok) throw await apiError(r);
+          setPending(true);
+          const run = await watchRun("deploy.yml", "event=workflow_dispatch&per_page=5", (rs) => rs.find((x) => x.id > prevId), (x) => sayTo(plog, "Neocities: " + (x ? runLabel(x) : "esperando que empiece…")));
+          if (run && run.conclusion === "success") { setPending(false); sayTo(plog, "✔ Aprobado y publicado: ya lo ve todo el mundo.", "ok"); }
+          else sayTo(plog, run ? "El deploy falló (" + run.conclusion + ")." : "Guardado; el deploy sigue en proceso (revisa Actions).", run ? "err" : "", run && run.html_url ? { href: run.html_url, text: "→ ver en Actions" } : null);
+          refreshStatus();
+        } catch (e) { sayTo(plog, e.message, "err"); ok.disabled = pub.disabled = no.disabled = false; }
+      };
+      const done = (t) => { if (m === hashMsg) hashMsg = null; box.replaceChildren(el("p", { class: "hint" }, t)); };
+      ok.disabled = m.kind === "comentario" && !post;
+      ok.onclick = async () => {
+        ok.disabled = pub.disabled = no.disabled = true;
+        add();
         let closed = false;
         try { closed = await closeIssue(m.number, "completed"); } catch (e) {}
         done("✔ Aprobado y añadido. " + (closed ? "Issue cerrada." : "No pude cerrar la Issue #" + m.number + " (el token necesita permiso Issues: Read and write); ciérrala a mano.") + " Falta guardar y publicar.");
       };
       no.onclick = async () => {
-        ok.disabled = no.disabled = true;
+        ok.disabled = pub.disabled = no.disabled = true;
         let closed = false;
         try { closed = await closeIssue(m.number, "not_planned"); } catch (e) {}
         done(closed ? "Descartado (Issue cerrada)." : "No pude cerrar la Issue #" + m.number + "; ciérrala a mano en GitHub.");
       };
-      box.append(el("div", { class: "btn-row" }, ok, no, m.url && el("a", { href: m.url, target: "_blank", rel: "noopener" }, "ver en GitHub")));
+      box.append(el("div", { class: "btn-row" }, pub, ok, no, m.url && el("a", { href: m.url, target: "_blank", rel: "noopener" }, "ver en GitHub")), plog);
       return box;
     }
 
@@ -801,13 +843,16 @@
     };
     const pasteBox = el("div", null, paste, el("div", { class: "btn-row" }, pasteBtn));
 
+    // llegó desde el botón «Revisar y aprobar» de la notificación (enlace #msg=…)
+    if (hashMsg) { out.append(card(hashMsg)); msg.textContent = "Mensaje recibido desde tu aviso:"; }
+
     root.append(
       el("h3", { class: "sec" }, "MENSAJES POR APROBAR"),
-      el("p", { class: "hint" }, "Los visitantes mandan su firma o comentario sin necesitar nada (te llega por correo o como Issue de tu repo). Aquí los revisas: al aprobar se añaden al libro de visitas o a la entrada, y al publicar los ve todo el mundo."),
+      el("p", { class: "hint" }, "Los visitantes mandan su firma o comentario sin necesitar nada (te llega un aviso de ntfy, o una Issue de tu repo si no hay ntfy). Aquí los revisas: al aprobar se añaden al libro de visitas o a la entrada, y al publicar los ve todo el mundo."),
       el("div", { class: "btn-row" }, find, el("a", { href: "https://github.com/" + (cfg.owner || "") + "/" + (cfg.repo || "") + "/issues", target: "_blank", rel: "noopener" }, "abrir Issues en GitHub")),
       msg, out,
-      el("h3", { class: "sec" }, "MENSAJES RECIBIDOS POR CORREO"),
-      el("p", { class: "hint" }, "Copia el bloque «mensaje_para_el_panel» del correo (desde «tipo:» hasta el final del texto) y pégalo aquí."),
+      el("h3", { class: "sec" }, "PEGAR UN MENSAJE A MANO"),
+      el("p", { class: "hint" }, "Si prefieres no usar el botón del aviso, copia el texto del mensaje (desde «tipo:» hasta el final) y pégalo aquí."),
       pasteBox,
       el("h3", { class: "sec" }, "FIRMAS DEL LIBRO DE VISITAS"),
       el("p", { class: "hint" }, "Ya aprobadas (las ve todo el mundo). Puedes editarlas, borrarlas o añadir una a mano. Los comentarios de cada entrada se editan en la pestaña Blogs."),
@@ -1037,7 +1082,7 @@
   });
 
   paintPill();
-  show("sitio");
+  show(hashMsg ? "mensajes" : "sitio");
 
   // si el panel ya conoce el repo y el token, trae la versión real de GitHub
   // (la copia de Pages puede estar en caché o desactualizada)

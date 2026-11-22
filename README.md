@@ -138,14 +138,19 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 
 El visitante **no necesita nada**: escribe, elige Anónimo o su usuario de Neocities (se muestra como enlace a `usuario.neocities.org`; no se verifica que sea suyo) y envía.
 
-1. En GitHub: **Settings → Secrets and variables → Actions → New repository secret**, nombre `CONTACT_EMAIL`, valor tu correo. Los workflows lo ponen en el sitio al publicar (no queda escrito en el repo).
-   Los mensajes te llegan por correo mediante [formsubmit.co](https://formsubmit.co) (gratis, sin cuenta). La primera vez te manda un correo de activación: ábrelo y confirma una sola vez.
-   Ojo: el sitio publicado necesita ese dato para enviar, así que alguien que mire el código de la página podría verlo. Para evitarlo, tras activar FormSubmit usa en `CONTACT_EMAIL` el **alias aleatorio** que te da (un código en lugar del correo): funciona igual y tu correo no aparece.
-2. En el panel, pestaña **💬 Mensajes**: pega el bloque `mensaje_para_el_panel` del correo (desde «tipo:») y aprueba o descarta.
+1. Crea el secreto de repo **`NTFY_TOPIC`** (**Settings → Secrets and variables → Actions → New repository secret**); los workflows lo ponen en el sitio al publicar.
+   Inventa un nombre largo y difícil de adivinar, por ejemplo `alienmax-k3x9q7p2z8` (letras, números, `-` y `_`).
+   Recibes cada mensaje al instante instalando la app **ntfy** (Android/iOS) y suscribiéndote a ese tema, o abriendo `https://ntfy.sh/TU-TEMA` en el navegador. No hace falta cuenta ni activación.
+   Como el tema queda en el código público, cualquiera podría leer o mandar avisos a ese tema; nada de eso publica nada en tu sitio, porque todo pasa por tu aprobación.
+2. Con ntfy, el aviso trae un botón **«Revisar y aprobar»**: lo tocas y se abre el panel con el mensaje ya cargado. Ahí eliges
+   **✔ Aprobar y publicar** (lo guarda en GitHub y lo publica en Neocities en un solo paso) o **✕ Descartar**. Sin copiar ni pegar.
+   Para que funcione desde el celular, abre el panel una vez en ese navegador, conecta usuario/repo/token y marca «Recordar el token en este navegador».
+   El enlace del panel se configura en `admin` de `public/data/social.js`. Aprobar guarda `content.js` en el repo, así que verás un commit por cada mensaje aprobado.
+   (También puedes pegar el texto del mensaje en la pestaña **💬 Mensajes**.)
    Al aprobar se añade al libro de visitas o a la entrada del blog.
 3. **Guarda y publica** como siempre: desde ese momento lo ve todo el mundo.
 
-Si dejas `email` vacío, el mensaje se abre como una **Issue** de tu repo (`repo` en `public/data/social.js`); entonces el visitante necesita cuenta de GitHub, pero tú puedes pulsar «Buscar mensajes nuevos» en el panel
+Si no configuras `NTFY_TOPIC`, el mensaje se abre como una **Issue** de tu repo (`repo` en `public/data/social.js`); entonces el visitante necesita cuenta de GitHub, pero tú puedes pulsar «Buscar mensajes nuevos» en el panel
 (el token necesita **Issues: Read and write**) y las Issues se cierran solas al aprobar.
 
 Mientras espera aprobación, el visitante ve su mensaje en su navegador marcado como «pendiente». Las firmas aprobadas se editan o borran en la misma pestaña; los comentarios, en Blogs (`@usuario: texto` enlaza a ese Neocities).

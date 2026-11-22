@@ -1,7 +1,7 @@
 /* ============================================
    social.js — firmas y comentarios moderados + identidad
    Identidad: "Anónimo" o un usuario de Neocities (sin verificar; enlaza a su sitio).
-   El visitante envía su mensaje sin cuenta (formsubmit.co → tu correo) o, si no hay email, como Issue de GitHub (ver data/social.js);
+   El visitante envía su mensaje sin cuenta (aviso en ntfy.sh) o, si no hay ntfy, como Issue de GitHub (ver data/social.js);
    el dueño lo aprueba en el panel y entonces lo ve todo el mundo.
    Mientras tanto el visitante lo ve en su navegador como «pendiente».
    ============================================ */
@@ -70,14 +70,33 @@
   }
 
   // ¿hay a dónde mandar los mensajes?
-  const canSend = !!(C.email || C.repo);
+  const canSend = !!(C.ntfy || C.repo);
+
+  const asyncFail = (via, e) => ({ ok: false, via: via, detail: "sin conexión con " + via + " (" + ((e && e.message) || "error") + ")" });
+
+  // aviso instantáneo en ntfy.sh (sin cuentas): recibes el mensaje en el celular o en https://ntfy.sh/<tu-tema>
+  // reviewUrl abre el panel con el mensaje ya cargado, listo para aprobar o descartar
+  function reviewUrl(body) {
+    return C.admin ? C.admin.replace(/#.*$/, "") + "#msg=" + encodeURIComponent(body) : "";
+  }
+
+  function sendNtfy(title, body) {
+    const url = reviewUrl(body);
+    const note = { topic: C.ntfy, title: title, message: body, tags: ["alien"] };
+    if (url) { note.click = url; note.actions = [{ action: "view", label: "Revisar y aprobar", url: url, clear: true }]; }
+    return fetch("https://ntfy.sh/", {
+      method: "POST",
+      body: JSON.stringify(note),
+    }).then((r) => ({ ok: r.ok, via: "ntfy", detail: r.ok ? "" : "ntfy respondió HTTP " + r.status })).catch((e) => asyncFail("ntfy", e));
+  }
 
   /**
    * Manda el mensaje al dueño. kind = "firma" | "comentario".
-   * Con `email` (data/social.js) se envía por formsubmit.co: el visitante no necesita nada.
-   * Sin email abre una Issue de GitHub ya escrita (el visitante necesita cuenta de GitHub).
+   * Canales (data/social.js):
+   *   ntfy → aviso instantáneo, sin cuentas ni activación
+   *   repo → solo si no hay ntfy: abre una Issue (el visitante necesita cuenta de GitHub)
    * Formato (el panel lo lee tal cual): tipo / entrada / nombre / neocities / mensaje.
-   * Devuelve una promesa {ok, via}. Llamarla dentro del submit (la ventana de GitHub se abre en el acto).
+   * Devuelve una promesa {ok, via, detail}.
    */
   function send(kind, who, text, post) {
     if (!canSend) return Promise.resolve({ ok: false, via: "" });
@@ -89,22 +108,13 @@
       "neocities: " + (who.neocities || "") + "\n" +
       "mensaje:\n" + text + "\n\n" +
       "(Envía este mensaje tal cual. AlienMax lo revisará antes de publicarlo.)";
-    if (C.email) {
-      return fetch("https://formsubmit.co/ajax/" + encodeURIComponent(C.email), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ _subject: title, _template: "box", _captcha: "false", mensaje_para_el_panel: body }),
-      }).then(async (r) => {
-        let j = {};
-        try { j = await r.json(); } catch (e) {}
-        const okJson = j.success === true || j.success === "true";
-        const detail = String(j.message || "").slice(0, 160);
-        // sin JSON legible no sabemos si llegó: lo tratamos como error y mostramos el código
-        return { ok: r.ok && okJson, via: "email", detail: detail || ("HTTP " + r.status) };
-      }).catch((e) => ({ ok: false, via: "email", detail: "sin conexión con formsubmit.co (" + (e && e.message || "error") + ")" }));
+    const jobs = [];
+    if (C.ntfy) jobs.push(sendNtfy(title, body));
+    if (!jobs.length) {
+      window.open("https://github.com/" + C.repo + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body), "_blank", "noopener");
+      return Promise.resolve({ ok: true, via: "github" });
     }
-    window.open("https://github.com/" + C.repo + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body), "_blank", "noopener");
-    return Promise.resolve({ ok: true, via: "github" });
+    return Promise.all(jobs).then((rs) => rs.find((r) => r.ok) || rs[0]);
   }
 
   const failNote = (r) => "No se pudo enviar" + (r && r.detail ? ": " + r.detail : "") + ".";

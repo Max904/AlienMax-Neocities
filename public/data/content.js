@@ -13,7 +13,7 @@ window.SITE = {
     "avatar": "assets/alienmax.gif"
   },
   "home": {
-    "welcome": "¡Hola! Soy AlienMax y este es mi rincón del espacio en internet. Actualmente estoy trabajando en el diseño de la pagina, así que vuelve mas tarde"
+    "welcome": "¡Hola! Soy AlienMax y este es mi rincón del espacio en internet. Actualmente estoy trabajando en el diseño de la pagina, así que vuelve mas tarde."
   },
   "about": {
     "intro": "Test",

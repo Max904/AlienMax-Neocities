@@ -19,9 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Poner el correo de contacto (secreto CONTACT_EMAIL)
+      - name: Poner el tema de ntfy (secreto NTFY_TOPIC)
         env:
-          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: node .github/scripts/inject-contact.js
 
       # El sitio es HTML/CSS/JS estático, no hay paso de build.
