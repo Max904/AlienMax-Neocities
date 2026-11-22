@@ -1,6 +1,6 @@
 window.SITE = {
   "site": {
-    "title": "✦ Purple Radio ✦",
+    "title": "Purple Radio",
     "tagline": "Transmitiendo desde la galaxia morada",
     "blogTagline": "Diario de a bordo, fecha estelar 2026",
     "marquee": "Página mayoritariamente lista! Feliz de poder dejar la base lista, ya puedo concentrarme en escribir para la página kjsjkjsjsj. Todo el sistema de comentarios está listo, ¡no olvides dejar tu firma!"
