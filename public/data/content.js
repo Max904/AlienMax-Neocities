@@ -37,7 +37,14 @@ window.SITE = {
       "image": "assets/eye.gif",
       "likes": 0,
       "body": "HIIIIIIIIIIIIIIIIIIIIIII this is a test blog in order to see if the like counter works",
-      "comments": []
+      "comments": [
+        {
+          "text": "Sup Me!",
+          "name": "alienmax",
+          "neocities": "alienmax",
+          "date": "2026-11-22"
+        }
+      ]
     }
   ],
   "music": [],
