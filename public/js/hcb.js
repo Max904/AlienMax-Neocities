@@ -124,6 +124,25 @@
     host.appendChild(bar);
     let mode = "anon";
     const q = (sel) => bar.querySelector(sel);
+    // se recuerda la última elección (modo, usuario, nombre y enlace) en este navegador
+    const MEM = "alienmax-ident";
+    const apply = () => {
+      bar.querySelectorAll(".hcb-mode").forEach((x) => x.classList.toggle("on", x.dataset.m === mode));
+      bar.querySelectorAll(".hcb-fields").forEach((x) => { x.hidden = x.dataset.for !== mode; });
+    };
+    try {
+      const m = JSON.parse(localStorage.getItem(MEM) || "null");
+      if (m && /^(anon|nc|custom)$/.test(m.mode)) {
+        mode = m.mode;
+        ["user", "name", "link"].forEach((k) => { if (typeof m[k] === "string") q("[data-f=" + k + "]").value = m[k].slice(0, 120); });
+        apply();
+      }
+    } catch (e) {}
+    const remember = () => {
+      try {
+        localStorage.setItem(MEM, JSON.stringify({ mode: mode, user: q("[data-f=user]").value, name: q("[data-f=name]").value, link: q("[data-f=link]").value }));
+      } catch (e) {}
+    };
     const update = () => {
       let v = "Anónimo", note = "Comentarás como Anónimo.";
       if (mode === "nc") {
@@ -139,6 +158,7 @@
         } else note = "Escribe tu nombre (y un enlace si quieres).";
       }
       ident.value = v;
+      remember();
       q(".hcb-as").textContent = note;
       if (ident.refresh) ident.refresh();
     };
@@ -146,8 +166,7 @@
       const b = e.target.closest(".hcb-mode");
       if (!b) return;
       mode = b.dataset.m;
-      bar.querySelectorAll(".hcb-mode").forEach((x) => x.classList.toggle("on", x === b));
-      bar.querySelectorAll(".hcb-fields").forEach((x) => { x.hidden = x.dataset.for !== mode; });
+      apply();
       update();
     });
     bar.addEventListener("input", update);
