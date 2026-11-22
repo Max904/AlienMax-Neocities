@@ -52,23 +52,14 @@
       "&num=" + encodeURIComponent(C.num || 10);
     const css = C.css && /^https:\/\/www\.htmlcommentbox\.com\//.test(C.css) ? '<link rel="stylesheet" href="' + C.css + '">' : "";
     const f = document.createElement("iframe");
-    f.className = "hcb-frame"; f.title = "Comentarios";
-    f.style.cssText = "width:100%;border:0;height:220px;background:transparent";
+    f.className = "hcb-frame"; f.title = "Comentarios"; f.scrolling = "auto";
+    f.style.cssText = "width:100%;border:0;height:480px;background:transparent";
     f.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><base target="_blank">' + css + "<style>" + CSS + "</style></head><body>" +
       '<div id="HCB_comment_box">Cargando comentarios…</div><script>window.hcb_user={PAGE:' + jsStr(key) + '};<\/script>' +
       '<script src=' + jsStr(src) + "><\/script></body></html>";
     host.appendChild(f);
-    // altura del contenido real (no de la ventana del iframe, o crecería sin parar)
-    const fit = () => {
-      try {
-        const d = f.contentDocument, el = d.getElementById("HCB_comment_box");
-        if (!el) return;
-        const h = Math.ceil(el.getBoundingClientRect().height) + 16;
-        if (h > 60 && Math.abs(h - (parseInt(f.style.height, 10) || 0)) > 2) f.style.height = h + "px";
-      } catch (e) {}
-    };
-    f.addEventListener("load", () => { fit(); linkNames(f); });
-    setInterval(fit, 600);
+    // altura fija con desplazamiento propio: medir el contenido hacía crecer el recuadro sin parar
+    f.addEventListener("load", () => linkNames(f));
   }
 
   // identificador estable del hilo (igual en GitHub Pages y en Neocities)
