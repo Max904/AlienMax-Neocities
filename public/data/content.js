@@ -39,7 +39,7 @@ window.SITE = {
       ],
       "image": "assets/alienmax.gif",
       "likes": 0,
-      "body": "Primer blog de la pagina WOHO!\n\nAhora si, me ha tomado tiempo diseñar la pagina y varia gente de [neocities](https://neocities.org/) ha encontrado la pagina cuando no estaba lista, pero creo que nadie interactuo debido a que estaba en español kjksjkjsjks.\n\nAhora que esta más desarrollada, puedo empezar a escribir blog, recomendar canciones y otras cosas.\n\nNos vemos!\n\n- Max 💜",
+      "body": "Primer blog de la pagina WOHO!\n\nAhora si, me ha tomado tiempo diseñar la pagina y varia gente de [neocities](https://neocities.org/) ha encontrado la pagina cuando no estaba lista, pero creo que nadie interactuo debido a que estaba en español.\n\nAún no funciona el contador de visitas, así que hay que ignorarlo por ahora kjsjksjs.\n\nAhora que esta más desarrollada, puedo empezar a escribir blog, recomendar canciones y otras cosas.\n\nNos vemos!\n\n- Max 💜",
       "comments": []
     }
   ],
