@@ -130,7 +130,8 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 | --- | --- |
 | Textos, blogs, música, galería | `public/data/content.js` (en el repo, se publica) |
 | Imágenes subidas desde el panel | `public/assets/uploads/` (en el repo) |
-| Visitas, likes y libro de visitas | En el navegador de cada visitante (`localStorage`), no en el repo |
+| Visitas y me gusta | Contadores compartidos en Abacus (`public/js/counters.js`), iguales para todos |
+| Firmas y comentarios pendientes | En el navegador del visitante hasta que los apruebes |
 | Borrador y token del panel | Solo en tu navegador |
 
 
@@ -164,3 +165,13 @@ Se puede **agarrar y lanzar** con el ratón/dedo; un clic corto muestra una fras
 
 Ajustes arriba de `ditto.js` (`SETTINGS`): `maxMascots` (tope de Dittos, 50 como en el original), `sound` (gritos) y `phrases`.
 Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto.py RUTA/0132_-_Ditto_Shimeji`.
+
+
+## Contadores compartidos (visitas y me gusta)
+
+`public/js/counters.js` usa [Abacus](https://abacus.jasoncameron.dev) (gratis, sin registro) para que el contador de visitas y los me gusta sean los mismos para todos.
+- **Visitas:** suma 1 por sesión del navegador. El número parte de 1337 (`START` en `main.js`).
+- **Me gusta:** cada navegador puede dar 1 por entrada y no se puede quitar (el contador compartido solo suma). El total mostrado es el `likes` de la entrada en el panel + los de Abacus.
+- Si Abacus no responde, el sitio sigue funcionando con el último valor visto.
+- Límite del servicio: 30 peticiones cada 10 s por IP (el sitio las espacia). Cualquiera podría sumar por su cuenta llamando a esa API: no es un contador a prueba de trampas.
+- Para empezar de cero, cambia `NS` en `counters.js`.

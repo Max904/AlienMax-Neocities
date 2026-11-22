@@ -86,24 +86,33 @@
       : "<li>Sin entradas</li>";
   }
 
-  // ---- likes (se guardan en el navegador de cada visitante) ----
+  // ---- likes: el total es el mismo para todos (counters.js); cada navegador puede dar 1 por entrada ----
   let likes = {};
   try { likes = JSON.parse(localStorage.getItem("alienmax-likes") || "{}"); } catch (e) {}
 
   box.querySelectorAll(".like-btn").forEach((btn) => {
     const id = btn.dataset.post;
     const base = parseInt(btn.dataset.base || "0", 10);
+    const C = window.COUNTERS;
+    const cacheKey = "alienmax-likecount-" + id;
+    let remote = 0;
+    try { remote = parseInt(localStorage.getItem(cacheKey) || "0", 10) || 0; } catch (e) {}
     const paint = () => {
       const liked = !!likes[id];
       btn.classList.toggle("liked", liked);
-      btn.textContent = (liked ? "💜 " : "🤍 ") + (base + (liked ? 1 : 0));
+      btn.title = liked ? "Ya te gustó (no se puede quitar)" : "Me gusta";
+      btn.textContent = (liked ? "💜 " : "🤍 ") + (base + remote);
     };
+    const setRemote = (v) => { remote = v; try { localStorage.setItem(cacheKey, String(v)); } catch (e) {} paint(); };
     btn.addEventListener("click", () => {
-      likes[id] = !likes[id];
+      if (likes[id]) return; // un contador compartido solo suma
+      likes[id] = true;
       try { localStorage.setItem("alienmax-likes", JSON.stringify(likes)); } catch (e) {}
-      paint();
+      remote += 1; paint(); // se ve al instante
+      if (C) C.hit("like-" + id).then(setRemote).catch(() => {});
     });
     paint();
+    if (C) C.get("like-" + id).then((v) => setRemote(likes[id] && v < 1 ? 1 : v)).catch(() => {});
   });
 
   // ---- mostrar / ocultar comentarios ----
