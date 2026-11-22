@@ -54,7 +54,17 @@
     let d;
     try { d = f.contentDocument; } catch (e) { return; }
     if (!d || !d.body) return;
-    const hide = (el) => { if (el && el !== d.body && el.id !== "HCB_comment_box") el.style.display = "none"; };
+    const hide = (el) => {
+      if (!el || el === d.body || el.id === "HCB_comment_box") return;
+      el.style.display = "none";
+      // si el contenedor se queda sin nada visible, también fuera (evita huecos)
+      let par = el.parentElement;
+      while (par && par.id !== "HCB_comment_box" && par !== d.body) {
+        const vis = [...par.childNodes].some((c) => (c.nodeType === 3 && c.nodeValue.trim()) || (c.nodeType === 1 && c.style.display !== "none" && getComputedStyle(c).display !== "none"));
+        if (vis) break;
+        par.style.display = "none"; par = par.parentElement;
+      }
+    };
     const run = () => {
       // «Thank you for commenting!»
       d.querySelectorAll("#HCB_comment_box *").forEach((el) => {
@@ -180,6 +190,18 @@
       } catch (e) {}
     };
     f.addEventListener("load", () => { linkNames(f, ident); fit(); setInterval(fit, 500); });
+  }
+
+  // mientras se arrastra algo (p. ej. Ditto) el iframe no debe «tragarse» el ratón
+  if (enabled) {
+    const st = document.createElement("style");
+    st.textContent = "html.hcb-drag iframe.hcb-frame{pointer-events:none!important}";
+    document.head.appendChild(st);
+    const on = () => document.documentElement.classList.add("hcb-drag");
+    const off = () => document.documentElement.classList.remove("hcb-drag");
+    window.addEventListener("pointerdown", on, true);
+    window.addEventListener("touchstart", on, true);
+    ["pointerup", "pointercancel", "touchend", "touchcancel", "blur", "dragend"].forEach((ev) => window.addEventListener(ev, off, true));
   }
 
   // identificador estable del hilo (igual en GitHub Pages y en Neocities)

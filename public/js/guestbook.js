@@ -17,6 +17,7 @@
     form.remove();
     wrap.insertAdjacentHTML("beforeend", window.HCB.tip + '<div class="hcb-host"></div>');
     window.HCB.mount(wrap.querySelector(".hcb-host"), window.HCB.key("libro-de-visitas"));
+    if (!(S.guestbook || []).length) { const bx = list.closest(".box") || list.parentNode; if (bx) bx.remove(); return; }
     list.innerHTML = (S.guestbook || []).map((e) => '<div class="guest-entry"><b>' + A.who(e) + "</b><small>" + A.fmt(e.date) + "</small><p>" + A.esc(e.message) + "</p></div>").join("");
     return;
   }
