@@ -43,7 +43,7 @@
     btn.disabled = true; say("Enviando…");
     const r = await A.send("firma", who, msg);
     btn.disabled = false;
-    if (A.canSend && !r.ok) { say("No se pudo enviar. Intenta de nuevo en un rato.", true); return; }
+    if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
     pending.unshift({ name: who.name, neocities: who.neocities, message: msg });
     try { localStorage.setItem(KEY, JSON.stringify(pending.slice(0, 20))); } catch (e) {}
     render();

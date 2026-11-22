@@ -94,16 +94,25 @@
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ _subject: title, _template: "box", _captcha: "false", mensaje_para_el_panel: body }),
-      }).then((r) => ({ ok: r.ok, via: "email" })).catch(() => ({ ok: false, via: "email" }));
+      }).then(async (r) => {
+        let j = {};
+        try { j = await r.json(); } catch (e) {}
+        const okJson = j.success === true || j.success === "true";
+        const detail = String(j.message || "").slice(0, 160);
+        // sin JSON legible no sabemos si llegó: lo tratamos como error y mostramos el código
+        return { ok: r.ok && okJson, via: "email", detail: detail || ("HTTP " + r.status) };
+      }).catch((e) => ({ ok: false, via: "email", detail: "sin conexión con formsubmit.co (" + (e && e.message || "error") + ")" }));
     }
     window.open("https://github.com/" + C.repo + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body), "_blank", "noopener");
     return Promise.resolve({ ok: true, via: "github" });
   }
+
+  const failNote = (r) => "No se pudo enviar" + (r && r.detail ? ": " + r.detail : "") + ".";
 
   const sentNote = (r) =>
     r && r.via === "github"
       ? "Se abrió GitHub: pulsa «Submit new issue» para enviarlo. AlienMax lo revisará antes de publicarlo."
       : "¡Enviado! AlienMax lo revisará y, cuando lo apruebe, lo verá todo el mundo.";
 
-  window.SOCIAL_API = { canSend, send, sentNote, who, fmt, identityHTML, readIdentity, wireIdentity, cooldown, esc };
+  window.SOCIAL_API = { canSend, send, sentNote, failNote, who, fmt, identityHTML, readIdentity, wireIdentity, cooldown, esc };
 })();

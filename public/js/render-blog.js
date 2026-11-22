@@ -146,7 +146,7 @@
       btn.disabled = true; say("Enviando…");
       const r = await A.send("comentario", who, text, { id: id, title: p.title });
       btn.disabled = false;
-      if (A.canSend && !r.ok) { say("No se pudo enviar. Intenta de nuevo en un rato.", true); return; }
+      if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
       (localC[id] = localC[id] || []).unshift({ name: who.name, neocities: who.neocities, text: text });
       try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {}
       paintComments(i, p);
