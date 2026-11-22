@@ -2,7 +2,7 @@
    main.js — contador de visitas (compartido), reloj, año
    ============================================ */
 (function () {
-  // contador de visitas: el mismo para todos (counters.js). Cuenta 1 visita por sesión del navegador.
+  // contador de visitas: el mismo para todos (counters.js). Cada carga de página suma 1, como los contadores de antes.
   // El número empieza en START para que no parezca un blog recién nacido.
   const START = 1337;
   const counterEl = document.getElementById("visit-counter");
@@ -13,12 +13,14 @@
     show(cached); // lo último que se vio, mientras llega el número real
     const C = window.COUNTERS;
     if (C) {
-      let counted = false;
-      try { counted = sessionStorage.getItem("alienmax-visit-counted") === "1"; } catch (e) {}
-      C[counted ? "get" : "hit"]("visitas").then((v) => {
-        try { sessionStorage.setItem("alienmax-visit-counted", "1"); localStorage.setItem("alienmax-visits", String(START + v)); } catch (e) {}
+      C.hit("visitas").then((v) => {
+        try { localStorage.setItem("alienmax-visits", String(START + v)); } catch (e) {}
         show(START + v);
-      }).catch(() => {});
+        counterEl.title = "";
+      }).catch((e) => {
+        counterEl.title = "No pude conectar con el contador compartido (" + (e && e.message || "error") + "); se muestra el último valor.";
+        if (window.console) console.warn("contador de visitas:", e);
+      });
     }
   }
 

@@ -86,33 +86,49 @@
       : "<li>Sin entradas</li>";
   }
 
-  // ---- likes: el total es el mismo para todos (counters.js); cada navegador puede dar 1 por entrada ----
-  let likes = {};
-  try { likes = JSON.parse(localStorage.getItem("alienmax-likes") || "{}"); } catch (e) {}
+  // ---- likes: el total es el mismo para todos (counters.js) y cada navegador puede dar y quitar el suyo ----
+  // El servicio de contadores solo suma, así que se guardan dos: «like-<id>» (me gusta) y «unlike-<id>» (quitados).
+  // Total = me gusta − quitados. Cada navegador aporta como mucho +1 neto.
+  let likes = {};   // este navegador: ¿le gusta?
+  let synced = {};  // este navegador: ¿su +1 ya está en el servicio?
+  try { likes = JSON.parse(localStorage.getItem("alienmax-likes") || "{}") || {}; } catch (e) {}
+  try { synced = JSON.parse(localStorage.getItem("alienmax-likes-synced") || "{}") || {}; } catch (e) {}
+  const save = () => {
+    try { localStorage.setItem("alienmax-likes", JSON.stringify(likes)); localStorage.setItem("alienmax-likes-synced", JSON.stringify(synced)); } catch (e) {}
+  };
 
   box.querySelectorAll(".like-btn").forEach((btn) => {
     const id = btn.dataset.post;
     const base = parseInt(btn.dataset.base || "0", 10);
     const C = window.COUNTERS;
-    const cacheKey = "alienmax-likecount-" + id;
-    let remote = 0;
-    try { remote = parseInt(localStorage.getItem(cacheKey) || "0", 10) || 0; } catch (e) {}
+    const ck = "alienmax-likecount-" + id;
+    let up = 0, down = 0;
+    try { const c = JSON.parse(localStorage.getItem(ck) || "[0,0]"); up = c[0] | 0; down = c[1] | 0; } catch (e) {}
+    const total = () => base + Math.max(0, up - down);
     const paint = () => {
       const liked = !!likes[id];
       btn.classList.toggle("liked", liked);
-      btn.title = liked ? "Ya te gustó (no se puede quitar)" : "Me gusta";
-      btn.textContent = (liked ? "💜 " : "🤍 ") + (base + remote);
+      btn.title = liked ? "Quitar mi me gusta" : "Me gusta";
+      btn.textContent = (liked ? "💜 " : "🤍 ") + total();
     };
-    const setRemote = (v) => { remote = v; try { localStorage.setItem(cacheKey, String(v)); } catch (e) {} paint(); };
+    const keep = () => { try { localStorage.setItem(ck, JSON.stringify([up, down])); } catch (e) {} paint(); };
+
     btn.addEventListener("click", () => {
-      if (likes[id]) return; // un contador compartido solo suma
-      likes[id] = true;
-      try { localStorage.setItem("alienmax-likes", JSON.stringify(likes)); } catch (e) {}
-      remote += 1; paint(); // se ve al instante
-      if (C) C.hit("like-" + id).then(setRemote).catch(() => {});
+      if (!likes[id]) {
+        likes[id] = true;
+        if (!synced[id]) { synced[id] = true; up += 1; if (C) C.hit("like-" + id).then((v) => { up = v; keep(); }).catch(() => {}); }
+      } else {
+        likes[id] = false;
+        if (synced[id]) { synced[id] = false; down += 1; if (C) C.hit("unlike-" + id).then((v) => { down = v; keep(); }).catch(() => {}); }
+        // si el me gusta era antiguo (solo local), no hay nada que quitar en el servicio
+      }
+      save(); keep();
     });
     paint();
-    if (C) C.get("like-" + id).then((v) => setRemote(likes[id] && v < 1 ? 1 : v)).catch(() => {});
+    if (C) {
+      C.get("like-" + id).then((v) => { up = v; keep(); }).catch(() => {});
+      C.get("unlike-" + id).then((v) => { down = v; keep(); }).catch(() => {});
+    }
   });
 
   // ---- mostrar / ocultar comentarios ----
