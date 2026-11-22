@@ -58,7 +58,15 @@
       '<div id="HCB_comment_box">Cargando comentarios…</div><script>window.hcb_user={PAGE:' + jsStr(key) + '};<\/script>' +
       '<script src=' + jsStr(src) + "><\/script></body></html>";
     host.appendChild(f);
-    const fit = () => { try { const h = f.contentDocument.documentElement.scrollHeight; if (h > 40) f.style.height = h + 8 + "px"; } catch (e) {} };
+    // altura del contenido real (no de la ventana del iframe, o crecería sin parar)
+    const fit = () => {
+      try {
+        const d = f.contentDocument, el = d.getElementById("HCB_comment_box");
+        if (!el) return;
+        const h = Math.ceil(el.getBoundingClientRect().height) + 16;
+        if (h > 60 && Math.abs(h - (parseInt(f.style.height, 10) || 0)) > 2) f.style.height = h + "px";
+      } catch (e) {}
+    };
     f.addEventListener("load", () => { fit(); linkNames(f); });
     setInterval(fit, 600);
   }
