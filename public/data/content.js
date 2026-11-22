@@ -26,7 +26,9 @@ window.SITE = {
       "Smash Bros 🎮"
     ],
     "motto": "I hope the aliens believe in me.",
-    "friends": []
+    "friends": [
+      "https://pbs.twimg.com/profile_images/1812693760603455488/-pnzUJzr_400x400.jpg"
+    ]
   },
   "posts": [
     {
