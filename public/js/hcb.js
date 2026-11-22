@@ -16,6 +16,34 @@
     "#HCB_comment_box,#HCB_comment_box *{color:inherit}#HCB_comment_box a{color:#c9a7ff}";
   const jsStr = (v) => JSON.stringify(String(v)).replace(/</g, "\\u003c");
 
+  // un nombre escrito como @usuario se convierte en enlace a usuario.neocities.org (solo ese dominio; no se verifica que sea quien dice)
+  const NAME_RE = /^@([a-z0-9][a-z0-9-]{0,31})$/i;
+  function linkNames(f) {
+    let d;
+    try { d = f.contentDocument; } catch (e) { return; }
+    if (!d || !d.body) return;
+    const run = () => {
+      const w = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT);
+      const hits = [];
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        const par = n.parentNode;
+        if (!par || /^(A|SCRIPT|STYLE|TEXTAREA|INPUT)$/.test(par.nodeName)) continue;
+        const m = NAME_RE.exec(n.nodeValue.trim());
+        if (m) hits.push([n, m[1].toLowerCase()]);
+      }
+      hits.forEach(([n, u]) => {
+        const a = d.createElement("a");
+        a.href = "https://" + u + ".neocities.org/";
+        a.target = "_blank"; a.rel = "noopener nofollow";
+        a.title = "Ir a " + u + ".neocities.org";
+        a.textContent = u;
+        n.parentNode.replaceChild(a, n);
+      });
+    };
+    run();
+    new MutationObserver(run).observe(d.body, { childList: true, subtree: true });
+  }
+
   function mount(host, key) {
     if (!enabled || !host || host.dataset.hcb) return;
     host.dataset.hcb = "1";
@@ -31,12 +59,12 @@
       '<script src=' + jsStr(src) + "><\/script></body></html>";
     host.appendChild(f);
     const fit = () => { try { const h = f.contentDocument.documentElement.scrollHeight; if (h > 40) f.style.height = h + 8 + "px"; } catch (e) {} };
-    f.addEventListener("load", fit);
+    f.addEventListener("load", () => { fit(); linkNames(f); });
     setInterval(fit, 600);
   }
 
   // identificador estable del hilo (igual en GitHub Pages y en Neocities)
   const key = (id) => "https://alienmax.neocities.org/" + id;
   window.HCB = { enabled, mount, key,
-    tip: '<p class="fine">Escribe tu nombre (o «Anónimo»). Si quieres que te enlace a tu sitio, pon <b>usuario.neocities.org</b> en «Website».</p>' };
+    tip: '<p class="fine">Escribe tu nombre o «Anónimo». Para mostrar tu página de Neocities, escribe <b>@tuusuario</b> como nombre: al hacerle clic irá a tuusuario.neocities.org (no se verifica).</p>' };
 })();
