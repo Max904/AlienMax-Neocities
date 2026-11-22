@@ -3,18 +3,18 @@
    ============================================ */
 (function () {
   // contador de visitas: el mismo para todos (counters.js). Cada carga de página suma 1, como los contadores de antes.
-  // El número empieza en START para que no parezca un blog recién nacido.
-  const START = 1337;
+  // El número empieza en START (0 = contador reiniciado). Para reiniciar otra vez, cambia la clave "visitas-v2" por otra (p. ej. "visitas-v3") y la de localStorage.
+  const START = 0;
   const counterEl = document.getElementById("visit-counter");
   if (counterEl) {
     const show = (n) => { counterEl.textContent = String(n).padStart(7, "0"); };
     let cached = START;
-    try { cached = parseInt(localStorage.getItem("alienmax-visits") || String(START), 10) || START; } catch (e) {}
+    try { cached = parseInt(localStorage.getItem("alienmax-visits-v2") || String(START), 10) || START; } catch (e) {}
     show(cached); // lo último que se vio, mientras llega el número real
     const C = window.COUNTERS;
     if (C) {
-      C.hit("visitas").then((v) => {
-        try { localStorage.setItem("alienmax-visits", String(START + v)); } catch (e) {}
+      C.hit("visitas-v2").then((v) => {
+        try { localStorage.setItem("alienmax-visits-v2", String(START + v)); } catch (e) {}
         show(START + v);
         counterEl.title = "";
       }).catch((e) => {
