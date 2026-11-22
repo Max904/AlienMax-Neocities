@@ -119,6 +119,20 @@
   let localC = {};
   try { localC = JSON.parse(localStorage.getItem(LKEY) || "{}") || {}; } catch (e) {}
 
+  // lo que ya fue aprobado (o tiene más de 30 días) deja de figurar como pendiente
+  const norm = (t) => String(t || "").replace(/\s+/g, " ").trim();
+  const sameWho = (a, b) => String(a.neocities || a.name || "").toLowerCase() === String(b.neocities || b.name || "").toLowerCase();
+  let cleaned = false;
+  posts.forEach((p, i) => {
+    const id = p.id || "post" + i;
+    if (!localC[id]) return;
+    const left = localC[id].filter((c) =>
+      (!c.t || Date.now() - c.t < 30 * 864e5) &&
+      !(p.comments || []).some((a) => norm(a.text) === norm(c.text) && sameWho(a, c)));
+    if (left.length !== localC[id].length) { cleaned = true; if (left.length) localC[id] = left; else delete localC[id]; }
+  });
+  if (cleaned) { try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {} }
+
   function paintComments(i, p) {
     const id = p.id || "post" + i;
     const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>pendiente de aprobación</small></div>");
@@ -147,7 +161,7 @@
       const r = await A.send("comentario", who, text, { id: id, title: p.title });
       btn.disabled = false;
       if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
-      (localC[id] = localC[id] || []).unshift({ name: who.name, neocities: who.neocities, text: text });
+      (localC[id] = localC[id] || []).unshift({ name: who.name, neocities: who.neocities, text: text, t: Date.now() });
       try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {}
       paintComments(i, p);
       form.elements["text"].value = "";

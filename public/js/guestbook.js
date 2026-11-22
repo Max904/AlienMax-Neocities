@@ -17,6 +17,14 @@
   let pending = [];
   try { pending = JSON.parse(localStorage.getItem(KEY) || "[]") || []; } catch (e) {}
 
+  // lo que ya fue aprobado (o tiene más de 30 días) deja de figurar como pendiente
+  const norm = (t) => String(t || "").replace(/\s+/g, " ").trim();
+  const approved = (S.guestbook || []);
+  const left = pending.filter((p) =>
+    (!p.t || Date.now() - p.t < 30 * 864e5) &&
+    !approved.some((a) => norm(a.message) === norm(p.message) && String(a.neocities || a.name || "").toLowerCase() === String(p.neocities || p.name || "").toLowerCase()));
+  if (left.length !== pending.length) { pending = left; try { localStorage.setItem(KEY, JSON.stringify(pending)); } catch (e) {} }
+
   function render() {
     const rows = [];
     pending.forEach((e) => rows.push({ who: A.who(e), date: "pendiente de aprobación", msg: e.message, cls: " pending" }));
@@ -44,7 +52,7 @@
     const r = await A.send("firma", who, msg);
     btn.disabled = false;
     if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
-    pending.unshift({ name: who.name, neocities: who.neocities, message: msg });
+    pending.unshift({ name: who.name, neocities: who.neocities, message: msg, t: Date.now() });
     try { localStorage.setItem(KEY, JSON.stringify(pending.slice(0, 20))); } catch (e) {}
     render();
     msgBox.value = ""; counter.textContent = "0 / 300";
