@@ -25,7 +25,21 @@ window.SITE = {
       "Test"
     ]
   },
-  "posts": [],
+  "posts": [
+    {
+      "id": "pmwredpby",
+      "title": "Test Blog",
+      "date": "2026-11-22",
+      "mood": "Con Esperanza",
+      "tags": [
+        "Initial Test"
+      ],
+      "image": "assets/eye.gif",
+      "likes": 0,
+      "body": "HIIIIIIIIIIIIIIIIIIIIIII this is a test blog in order to see if the like counter works",
+      "comments": []
+    }
+  ],
   "music": [],
   "gallery": [],
   "topGif": {
