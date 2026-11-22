@@ -72,6 +72,7 @@ así que para cambiar textos, entradas, música o imágenes no hace falta tocar 
    - Permissions → Repository permissions:
      - **Contents: Read and write** (para guardar los cambios)
      - **Actions: Read and write** (para lanzar y seguir el deploy a Neocities)
+     - **Issues: Read and write** (para revisar los mensajes de los visitantes)
 2. En el panel, pestaña **Guardar y publicar**: el usuario y el repo ya aparecen rellenos, escribe la rama
    (`main`) y pega el token. Usa **Probar conexión** para comprobarlo; avisa si falta algún permiso.
 
@@ -132,6 +133,23 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 | Visitas, likes y libro de visitas | En el navegador de cada visitante (`localStorage`), no en el repo |
 | Borrador y token del panel | Solo en tu navegador |
 
+
+## Libro de visitas y comentarios (moderados por ti)
+
+El visitante **no necesita nada**: escribe, elige Anónimo o su usuario de Neocities (se muestra como enlace a `usuario.neocities.org`; no se verifica que sea suyo) y envía.
+
+1. En GitHub: **Settings → Secrets and variables → Actions → New repository secret**, nombre `CONTACT_EMAIL`, valor tu correo. Los workflows lo ponen en el sitio al publicar (no queda escrito en el repo).
+   Los mensajes te llegan por correo mediante [formsubmit.co](https://formsubmit.co) (gratis, sin cuenta). La primera vez te manda un correo de activación: ábrelo y confirma una sola vez.
+   Ojo: el sitio publicado necesita ese dato para enviar, así que alguien que mire el código de la página podría verlo. Para evitarlo, tras activar FormSubmit usa en `CONTACT_EMAIL` el **alias aleatorio** que te da (un código en lugar del correo): funciona igual y tu correo no aparece.
+2. En el panel, pestaña **💬 Mensajes**: pega el bloque `mensaje_para_el_panel` del correo (desde «tipo:») y aprueba o descarta.
+   Al aprobar se añade al libro de visitas o a la entrada del blog.
+3. **Guarda y publica** como siempre: desde ese momento lo ve todo el mundo.
+
+Si dejas `email` vacío, el mensaje se abre como una **Issue** de tu repo (`repo` en `public/data/social.js`); entonces el visitante necesita cuenta de GitHub, pero tú puedes pulsar «Buscar mensajes nuevos» en el panel
+(el token necesita **Issues: Read and write**) y las Issues se cierran solas al aprobar.
+
+Mientras espera aprobación, el visitante ve su mensaje en su navegador marcado como «pendiente». Las firmas aprobadas se editan o borran en la misma pestaña; los comentarios, en Blogs (`@usuario: texto` enlaza a ese Neocities).
+Hay trampa anti-bots, 1 envío cada 20 s y límite de 300 caracteres.
 
 ## Ditto shimeji
 

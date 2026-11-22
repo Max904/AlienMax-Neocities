@@ -57,7 +57,7 @@
       <main class="main">
         <div class="box">
           <div class="box-title">✉ FIRMA AQUÍ</div>
-          <div class="box-body"><form class="guest-form" id="guest-form"><label for="name">Tu nombre:</label><input id="name" name="name" maxlength="30" required><label for="msg">Tu mensaje:</label><textarea id="msg" name="msg" maxlength="300" required></textarea><button type="submit">✦ ENVIAR ✦</button></form></div>
+          <div class="box-body"><form class="guest-form" id="guest-form"><label>Firmar como:</label><div id="g-ident"></div><label for="msg">Tu mensaje:</label><textarea id="msg" name="msg" maxlength="300" placeholder="Escribe algo bonito para la galaxia…" required></textarea><div class="count" id="msg-count">0 / 300</div><input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="row"><button type="submit">✦ ENVIAR ✦</button><span class="form-status" id="guest-status"></span></div><p class="fine">Tu firma se envía a AlienMax; cuando la apruebe la verá todo el mundo. El usuario de Neocities no se verifica: solo enlaza a ese sitio.</p></form></div>
         </div>
 
         <div class="box">
@@ -76,6 +76,8 @@
 
   <script src="js/stars.js"></script>
   <script src="js/data-bind.js"></script>
+  <script src="data/social.js"></script>
+  <script src="js/social.js"></script>
   <script src="js/guestbook.js"></script>
   <script src="js/render-gifs.js"></script>
   <script src="js/main.js"></script>

@@ -34,6 +34,7 @@
     d.posts = d.posts || [];
     d.music = d.music || [];
     d.gallery = d.gallery || [];
+    d.guestbook = d.guestbook || [];
     // gifs: si falta algo se usan los valores por defecto (js/page-gifs.js)
     const PG = window.PAGE_GIFS;
     const t = d.topGif || {};
@@ -271,7 +272,10 @@
   function parseComments(text) {
     return text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
       const i = l.indexOf(":");
-      return i > 0 ? { name: l.slice(0, i).trim(), text: l.slice(i + 1).trim() } : { name: "anónimo", text: l };
+      if (i <= 0) return { name: "Anónimo", text: l };
+      const n = l.slice(0, i).trim(), c = { name: n, text: l.slice(i + 1).trim() };
+      if (n.charAt(0) === "@") { c.name = n.slice(1); c.neocities = n.slice(1); } // @usuario = usuario de Neocities
+      return c;
     });
   }
 
@@ -289,7 +293,7 @@
       const v = obj[key];
       if (type === "lines") return (v || []).join("\n");
       if (type === "tags") return (v || []).join(", ");
-      if (type === "comments") return (v || []).map((c) => c.name + ": " + c.text).join("\n");
+      if (type === "comments") return (v || []).map((c) => (c.neocities ? "@" + c.neocities : c.name) + ": " + c.text).join("\n");
       return v == null ? "" : v;
     };
     input.value = read();
@@ -565,6 +569,7 @@
     musica: { title: "♪ MÚSICA RECOMENDADA", render: tabMusica },
     galeria: { title: "❀ GALERÍA", render: tabGaleria },
     gifs: { title: "🎞 GIFS Y FONDOS", render: tabGifs },
+    mensajes: { title: "💬 MENSAJES", render: tabMensajes },
     publicar: { title: "🚀 GUARDAR Y PUBLICAR", render: tabPublicar },
   };
 
@@ -608,7 +613,7 @@
         field("Likes iniciales", p, "likes", { type: "number" }),
         field("Imagen (opcional)", p, "image", { upload: true, thumb: true, wide: true }),
         field("Texto", p, "body", { type: "textarea", rows: 9, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
-        field("Comentarios", p, "comments", { type: "comments", rows: 3, wide: true, hint: "Uno por línea con el formato  nombre: comentario" }),
+        field("Comentarios", p, "comments", { type: "comments", rows: 3, wide: true, hint: "Uno por línea:  nombre: comentario  (con @usuario: comentario enlaza a su Neocities)" }),
       ],
     });
   }
@@ -709,6 +714,117 @@
     log.className = "log" + (cls ? " " + cls : "");
     log.textContent = msg;
     if (link) log.append(document.createTextNode("\n"), el("a", { href: link.href, target: "_blank", rel: "noopener" }, link.text));
+  }
+
+  // ---------- mensajes de los visitantes (firmas y comentarios) ----------
+  const NC_RE = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
+
+  // lee el formato que genera js/social.js; devuelve null si no es un mensaje válido
+  function parseIssue(issue) {
+    const body = String(issue.body || "").replace(/\r/g, "");
+    const tk = (/^tipo:[ \t]*(firma|comentario)[ \t]*$/m.exec(body) || [])[1];
+    const kind = tk || (/^\[Firma\]/.test(issue.title || "") ? "firma" : /^\[Comentario\]/.test(issue.title || "") ? "comentario" : "");
+    if (!kind) return null;
+    const line = (k) => { const m = new RegExp("^" + k + ":[ \\t]*(.*)$", "m").exec(body); return m ? m[1].trim() : ""; };
+    const mi = ("\n" + body).indexOf("\nmensaje:\n");
+    let text = mi < 0 ? "" : body.slice(mi + 9).split("\n\n(Envía este mensaje")[0].trim();
+    text = text.slice(0, 300);
+    if (!text) return null;
+    const nc = line("neocities");
+    const neocities = NC_RE.test(nc) ? nc.toLowerCase() : "";
+    return { kind, post: line("entrada"), name: neocities || line("nombre").slice(0, 32) || "Anónimo", neocities, text, number: issue.number, url: issue.html_url, who: issue.user && issue.user.login };
+  }
+
+  function tabMensajes() {
+    const root = el("div");
+    const out = el("div", { class: "inbox" });
+    const msg = el("p", { class: "hint" });
+    const find = el("button", { type: "button", class: "btn" }, "🔄 Buscar mensajes nuevos");
+
+    const closeIssue = async (n, reason) => {
+      if (!n) return true; // llegó por correo: no hay Issue que cerrar
+      const r = await api("PATCH", repoPath() + "/issues/" + n, { state: "closed", state_reason: reason });
+      return r.ok;
+    };
+
+    function card(m) {
+      const box = el("div", { class: "item-body inbox-item" });
+      let post = null;
+      if (m.kind === "comentario") post = data.posts.find((x) => x.id === m.post);
+      box.append(
+        el("p", null, el("b", null, m.kind === "firma" ? "✉ Firma" : "💬 Comentario" + (post ? " en «" + post.title + "»" : " (entrada no encontrada)")), " · ", m.neocities ? "👽 " + m.neocities : m.name, m.who ? "  · GitHub: " + m.who : ""),
+        el("blockquote", null, m.text)
+      );
+      const ok = el("button", { type: "button", class: "btn" }, "✔ Aprobar");
+      const no = el("button", { type: "button", class: "btn danger" }, "✕ Descartar");
+      const done = (t) => { box.replaceChildren(el("p", { class: "hint" }, t)); };
+      ok.disabled = m.kind === "comentario" && !post;
+      ok.onclick = async () => {
+        ok.disabled = no.disabled = true;
+        const base = { name: m.name, neocities: m.neocities, date: todayISO() };
+        if (m.kind === "firma") data.guestbook.unshift(Object.assign({ message: m.text }, base));
+        else (post.comments = post.comments || []).push(Object.assign({ text: m.text }, base));
+        changed();
+        let closed = false;
+        try { closed = await closeIssue(m.number, "completed"); } catch (e) {}
+        done("✔ Aprobado y añadido. " + (closed ? "Issue cerrada." : "No pude cerrar la Issue #" + m.number + " (el token necesita permiso Issues: Read and write); ciérrala a mano.") + " Falta guardar y publicar.");
+      };
+      no.onclick = async () => {
+        ok.disabled = no.disabled = true;
+        let closed = false;
+        try { closed = await closeIssue(m.number, "not_planned"); } catch (e) {}
+        done(closed ? "Descartado (Issue cerrada)." : "No pude cerrar la Issue #" + m.number + "; ciérrala a mano en GitHub.");
+      };
+      box.append(el("div", { class: "btn-row" }, ok, no, m.url && el("a", { href: m.url, target: "_blank", rel: "noopener" }, "ver en GitHub")));
+      return box;
+    }
+
+    find.onclick = async () => {
+      if (!configReady()) { msg.textContent = "Primero conecta GitHub en la pestaña «Guardar y publicar» (usuario, repo y token)."; return; }
+      find.disabled = true; msg.textContent = "Buscando…"; out.replaceChildren();
+      try {
+        const r = await api("GET", repoPath() + "/issues?state=open&per_page=100");
+        if (!r.ok) throw await apiError(r);
+        const list = (await r.json()).filter((i) => !i.pull_request).map(parseIssue).filter(Boolean).reverse();
+        msg.textContent = list.length ? list.length + " mensaje(s) por revisar. Lo que apruebes queda en el borrador: luego guarda y publica." : "No hay mensajes nuevos.";
+        list.forEach((m) => out.append(card(m)));
+      } catch (e) { msg.textContent = "No pude leer las Issues: " + e.message + " (el token necesita permiso Issues: Read)."; }
+      find.disabled = false;
+    };
+
+    const paste = el("textarea", { rows: 6, placeholder: "tipo: firma\nnombre: …\nneocities: …\nmensaje:\n…" });
+    const pasteBtn = el("button", { type: "button", class: "btn" }, "+ Añadir a la lista de pendientes");
+    pasteBtn.onclick = () => {
+      const m = parseIssue({ title: "", body: paste.value });
+      if (!m) { msg.textContent = "No reconozco ese mensaje: debe empezar con «tipo: firma» o «tipo: comentario» e incluir «mensaje:»."; return; }
+      m.who = ""; out.append(card(m)); paste.value = ""; msg.textContent = "Añadido abajo, en «Mensajes por aprobar».";
+    };
+    const pasteBox = el("div", null, paste, el("div", { class: "btn-row" }, pasteBtn));
+
+    root.append(
+      el("h3", { class: "sec" }, "MENSAJES POR APROBAR"),
+      el("p", { class: "hint" }, "Los visitantes mandan su firma o comentario sin necesitar nada (te llega por correo o como Issue de tu repo). Aquí los revisas: al aprobar se añaden al libro de visitas o a la entrada, y al publicar los ve todo el mundo."),
+      el("div", { class: "btn-row" }, find, el("a", { href: "https://github.com/" + (cfg.owner || "") + "/" + (cfg.repo || "") + "/issues", target: "_blank", rel: "noopener" }, "abrir Issues en GitHub")),
+      msg, out,
+      el("h3", { class: "sec" }, "MENSAJES RECIBIDOS POR CORREO"),
+      el("p", { class: "hint" }, "Copia el bloque «mensaje_para_el_panel» del correo (desde «tipo:» hasta el final del texto) y pégalo aquí."),
+      pasteBox,
+      el("h3", { class: "sec" }, "FIRMAS DEL LIBRO DE VISITAS"),
+      el("p", { class: "hint" }, "Ya aprobadas (las ve todo el mundo). Puedes editarlas, borrarlas o añadir una a mano. Los comentarios de cada entrada se editan en la pestaña Blogs."),
+      listPanel(data.guestbook, {
+        addLabel: "+ Añadir firma",
+        create: () => ({ name: "Anónimo", neocities: "", message: "", date: todayISO() }),
+        title: (g) => (g.date || "") + " — " + (g.neocities ? "👽 " + g.neocities : g.name || "Anónimo") + ": " + String(g.message || "").slice(0, 40),
+        fields: (g) => [
+          field("Nombre", g, "name"),
+          field("Usuario de Neocities (opcional)", g, "neocities"),
+          field("Fecha", g, "date", { type: "date" }),
+          el("span"),
+          field("Mensaje", g, "message", { type: "textarea", rows: 3, wide: true }),
+        ],
+      })
+    );
+    return root;
   }
 
   function tabPublicar() {

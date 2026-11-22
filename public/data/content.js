@@ -50,5 +50,6 @@ window.SITE = {
     "about": "assets/sky-bg.gif",
     "gallery": "assets/shinypwater.gif",
     "guestbook": "assets/flowers-bg.gif"
-  }
+  },
+  "guestbook": []
 };

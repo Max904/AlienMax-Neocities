@@ -28,6 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Poner el correo de contacto (secreto CONTACT_EMAIL)
+        env:
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+        run: node .github/scripts/inject-contact.js
+
       - name: Armar el sitio de Pages
         run: |
           mkdir _pages

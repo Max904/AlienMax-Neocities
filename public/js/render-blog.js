@@ -7,14 +7,22 @@
   const box = document.getElementById("posts");
   if (!box) return;
 
+  const A = window.SOCIAL_API;
+  const staticComments = (arr) => arr.map((c) => '<div class="comment"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + (c.date ? " <small>" + A.fmt(c.date) + "</small>" : "") + "</div>").join("");
+
   // ---- entradas ----
   function postHTML(p, i) {
     const tags = p.tags || [];
     const comments = p.comments || [];
     const img = U.safeUrl(p.image);
-    const commentsHTML = comments.length
-      ? comments.map((c) => '<div class="comment"><b>' + U.esc(c.name) + ":</b> " + U.esc(c.text) + "</div>").join("")
-      : '<div class="comment">Aún no hay comentarios, ¡sé el primero en el <a href="libro-de-visitas.html">libro de visitas</a>!</div>';
+    const commentsHTML =
+      '<div class="comment-list" id="cl' + i + '">' + staticComments(comments) + "</div>" +
+      '<form class="comment-form" data-post="' + U.esc(p.id || "post" + i) + '" data-i="' + i + '">' +
+        '<textarea name="text" maxlength="300" rows="2" placeholder="Escribe un comentario…" required></textarea>' +
+        '<input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        A.identityHTML("c" + i) +
+        '<div class="row"><button type="submit">Comentar</button><span class="form-status"></span></div>' +
+      "</form>";
 
     return (
       '<article class="post" data-tags="' + U.esc(tags.map(U.slug).join(" ")) + '">' +
@@ -105,4 +113,47 @@
       if (c) c.classList.toggle("open");
     });
   });
+
+  // ---- comentarios: los aprobados los ve todo el mundo; los recién enviados quedan «pendientes» en tu navegador ----
+  const LKEY = "alienmax-comments-pending";
+  let localC = {};
+  try { localC = JSON.parse(localStorage.getItem(LKEY) || "{}") || {}; } catch (e) {}
+
+  function paintComments(i, p) {
+    const id = p.id || "post" + i;
+    const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>pendiente de aprobación</small></div>");
+    const approved = p.comments || [];
+    const list = document.getElementById("cl" + i);
+    list.innerHTML = mine.join("") + staticComments(approved) || '<div class="comment">Aún no hay comentarios. ¡Sé el primero!</div>';
+    const btn = box.querySelector('.comment-toggle[data-target="c' + i + '"]');
+    if (btn) btn.textContent = "💬 comentarios (" + approved.length + ")";
+  }
+
+  box.querySelectorAll(".comment-form").forEach((form) => {
+    const i = +form.dataset.i, p = posts[i], id = form.dataset.post;
+    const st = form.querySelector(".form-status");
+    const say = (t, bad) => { st.textContent = t; st.className = "form-status" + (bad ? " bad" : ""); };
+    A.wireIdentity(form, "c" + i);
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      if (form.elements["website"].value) return;
+      const text = form.elements["text"].value.trim();
+      const who = A.readIdentity(form, "c" + i);
+      if (who.error) { say(who.error, true); return; }
+      if (!text) return;
+      if (!A.cooldown()) { say("Espera unos segundos antes de comentar otra vez.", true); return; }
+      const btn = form.querySelector("button[type=submit]");
+      btn.disabled = true; say("Enviando…");
+      const r = await A.send("comentario", who, text, { id: id, title: p.title });
+      btn.disabled = false;
+      if (A.canSend && !r.ok) { say("No se pudo enviar. Intenta de nuevo en un rato.", true); return; }
+      (localC[id] = localC[id] || []).unshift({ name: who.name, neocities: who.neocities, text: text });
+      try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {}
+      paintComments(i, p);
+      form.elements["text"].value = "";
+      say(A.canSend ? A.sentNote(r) : "Guardado solo en tu navegador (aún no hay a dónde enviarlo).");
+    });
+  });
+
+  posts.forEach((p, i) => paintComments(i, p));
 })();

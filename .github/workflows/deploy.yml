@@ -19,6 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Poner el correo de contacto (secreto CONTACT_EMAIL)
+        env:
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+        run: node .github/scripts/inject-contact.js
+
       # El sitio es HTML/CSS/JS estático, no hay paso de build.
       - name: Deploy to Neocities
         uses: bcomnes/deploy-to-neocities@v3

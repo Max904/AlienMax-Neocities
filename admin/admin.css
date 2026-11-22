@@ -202,3 +202,6 @@ details.picker > summary { padding: 6px 10px; cursor: pointer; color: var(--lila
 
 /* sin imagen elegida no se muestra el cuadro de la miniatura */
 img.thumb:not([src]) { display: none; }
+
+.inbox-item { margin: 8px 0; }
+.inbox-item blockquote { margin: 6px 0; padding: 6px 10px; border-left: 3px solid var(--purple-3, #a56bff); background: rgba(0,0,0,.25); white-space: pre-wrap; }
