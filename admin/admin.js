@@ -271,31 +271,24 @@
   }
 
   // ---------- campos ----------
-  function parseComments(text) {
-    return text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
-      const i = l.indexOf(":");
-      if (i <= 0) return { name: "Anónimo", text: l };
-      const n = l.slice(0, i).trim(), c = { name: n, text: l.slice(i + 1).trim() };
-      if (n.charAt(0) === "@") { c.name = n.slice(1); c.neocities = n.slice(1); } // @usuario = usuario de Neocities
-      return c;
-    });
-  }
-
   /**
    * obj[key] <-> input. Tipos: text, textarea, date, number,
-   * lines (una por línea), tags (separadas por coma), comments ("nombre: texto").
+   * lines (una por línea), tags (separadas por coma).
    */
   function field(label, obj, key, o) {
     o = o || {};
     const type = o.type || "text";
-    const multi = type === "textarea" || type === "lines" || type === "comments";
+    const multi = type === "textarea" || type === "lines";
     const input = multi ? el("textarea", { rows: o.rows || 4 }) : el("input", { type: type === "tags" ? "text" : type });
 
+    if (o.ref != null && o.ref !== "") {
+      const r = Array.isArray(o.ref) ? o.ref.join(type === "tags" ? ", " : " / ") : String(o.ref);
+      input.setAttribute("placeholder", "ES: " + r.slice(0, 400));
+    }
     const read = () => {
       const v = obj[key];
       if (type === "lines") return (v || []).join("\n");
       if (type === "tags") return (v || []).join(", ");
-      if (type === "comments") return (v || []).map((c) => (c.neocities ? "@" + c.neocities : c.name) + ": " + c.text).join("\n");
       return v == null ? "" : v;
     };
     input.value = read();
@@ -317,7 +310,6 @@
       let v = input.value;
       if (type === "lines") v = v.split("\n").map((s) => s.trim()).filter(Boolean);
       else if (type === "tags") v = v.split(",").map((s) => s.trim()).filter(Boolean);
-      else if (type === "comments") v = parseComments(v);
       else if (type === "number") v = parseInt(v || "0", 10) || 0;
       obj[key] = v;
       if (thumb) setThumb(thumb, v);
@@ -571,45 +563,44 @@
     musica: { title: "♪ MÚSICA RECOMENDADA", render: tabMusica },
     galeria: { title: "❀ GALERÍA", render: tabGaleria },
     gifs: { title: "🎞 GIFS Y FONDOS", render: tabGifs },
-    mensajes: { title: "💬 MENSAJES", render: tabMensajes },
     publicar: { title: "🚀 GUARDAR Y PUBLICAR", render: tabPublicar },
   };
+
+  // ---------- idioma en el que se escribe ----------
+  let editLang = "es";
+  try { editLang = localStorage.getItem("alienmax-admin-lang") === "en" ? "en" : "es"; } catch (e) {}
+  // texto traducible: en inglés edita «campo_en» (mostrando el español como guía)
+  function T(label, obj, key, o) {
+    if (editLang !== "en") return field(label, obj, key, o);
+    return field("🇬🇧 " + label + " (English)", obj, key + "_en", Object.assign({}, o, { ref: obj[key], hint: "" }));
+  }
+  // campo compartido por los dos idiomas: solo se muestra al escribir en español
+  function S() { return editLang === "en" ? null : field.apply(null, arguments); }
 
   function tabSitio() {
     const s = data.site, p = data.profile;
     return el("div", { class: "grid-2" },
-      field("Título del sitio", s, "title"),
-      field("Subtítulo (inicio)", s, "tagline"),
-      field("Subtítulo (blogs)", s, "blogTagline"),
-      field("🇬🇧 Title (English)", s, "title_en", { hint: "Opcional: si lo dejas vacío se usa el título en español" }),
-      field("🇬🇧 Tagline (home, English)", s, "tagline_en"),
-      field("🇬🇧 Tagline (blogs, English)", s, "blogTagline_en"),
-      field("Texto que se desplaza (marquee)", s, "marquee", { type: "textarea", rows: 2, wide: true }),
-      field("🇬🇧 Marquee (English)", s, "marquee_en", { type: "textarea", rows: 2, wide: true }),
-      field("Tu nombre de usuario", p, "name"),
+      T("Título del sitio", s, "title"),
+      T("Subtítulo (inicio)", s, "tagline"),
+      T("Subtítulo (blogs)", s, "blogTagline"),
+      T("Texto que se desplaza (marquee)", s, "marquee", { type: "textarea", rows: 2, wide: true }),
+      S("Tu nombre de usuario", p, "name"),
       el("span"),
-      field("Estado", p, "status", { hint: "Puedes usar emojis" }),
-      field("🇬🇧 Status (English)", p, "status_en"),
-      field("Planeta", p, "planet"),
-      field("🇬🇧 Planet (English)", p, "planet_en"),
-      field("Color favorito", p, "color"),
-      field("🇬🇧 Favorite color (English)", p, "color_en"),
-      field("Foto de perfil (ruta o URL)", p, "avatar", { upload: true, thumb: true })
+      T("Estado", p, "status", { hint: "Puedes usar emojis" }),
+      T("Planeta", p, "planet"),
+      T("Color favorito", p, "color"),
+      S("Foto de perfil (ruta o URL)", p, "avatar", { upload: true, thumb: true })
     );
   }
 
   function tabTextos() {
     const h = data.home, a = data.about;
     return el("div", { class: "grid-2" },
-      field("Bienvenida del inicio", h, "welcome", { type: "textarea", rows: 8, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
-      field("🇬🇧 Welcome (English)", h, "welcome_en", { type: "textarea", rows: 8, wide: true, hint: "Opcional. Mismo formato." }),
-      field("Sobre mí: presentación", a, "intro", { type: "textarea", rows: 5, wide: true }),
-      field("🇬🇧 About me: intro (English)", a, "intro_en", { type: "textarea", rows: 5, wide: true }),
-      field("Mis cosas favoritas", a, "favorites", { type: "lines", rows: 6, wide: true, hint: "Una por línea" }),
-      field("🇬🇧 Favorite things (English)", a, "favorites_en", { type: "lines", rows: 6, wide: true, hint: "One per line, same order" }),
-      field("Lema", a, "motto", { wide: true }),
-      field("🇬🇧 Motto (English)", a, "motto_en", { wide: true }),
-      field("Amigos del espacio (imágenes)", a, "friends", { type: "lines", rows: 4, wide: true, hint: "Una ruta o URL por línea, por ejemplo assets/flower.gif" })
+      T("Bienvenida del inicio", h, "welcome", { type: "textarea", rows: 8, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
+      T("Sobre mí: presentación", a, "intro", { type: "textarea", rows: 5, wide: true }),
+      T("Mis cosas favoritas", a, "favorites", { type: "lines", rows: 6, wide: true, hint: "Una por línea" }),
+      T("Lema", a, "motto", { wide: true }),
+      S("Amigos del espacio (imágenes)", a, "friends", { type: "lines", rows: 4, wide: true, hint: "Una ruta o URL por línea, por ejemplo assets/flower.gif" })
     );
   }
 
@@ -619,18 +610,13 @@
       create: () => ({ id: "p" + Date.now().toString(36), title: "Nueva entrada", date: todayISO(), mood: "", tags: [], image: "", likes: 0, body: "", comments: [] }),
       title: (p) => (p.date || "sin fecha") + " — " + (p.title || "sin título"),
       fields: (p) => [
-        field("Título", p, "title", { wide: true }),
-        field("🇬🇧 Title (English)", p, "title_en", { wide: true }),
-        field("Fecha", p, "date", { type: "date" }),
-        field("Ánimo", p, "mood", { hint: "Ej: ✦ curioso" }),
-        field("🇬🇧 Mood (English)", p, "mood_en"),
-        field("Etiquetas", p, "tags", { type: "tags", hint: "Separadas por coma" }),
-        field("🇬🇧 Tags (English)", p, "tags_en", { type: "tags", hint: "Same order, comma separated" }),
-        field("Likes iniciales", p, "likes", { type: "number" }),
-        field("Imagen (opcional)", p, "image", { upload: true, thumb: true, wide: true }),
-        field("Texto", p, "body", { type: "textarea", rows: 9, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
-        field("🇬🇧 Text (English)", p, "body_en", { type: "textarea", rows: 9, wide: true, hint: "Opcional: si lo dejas vacío, los visitantes en inglés verán el texto en español." }),
-        field("Comentarios", p, "comments", { type: "comments", rows: 3, wide: true, hint: "Uno por línea:  nombre: comentario  (con @usuario: comentario enlaza a su Neocities)" }),
+        T("Título", p, "title", { wide: true }),
+        S("Fecha", p, "date", { type: "date" }),
+        T("Ánimo", p, "mood", { hint: "Ej: ✦ curioso" }),
+        T("Etiquetas", p, "tags", { type: "tags", hint: "Separadas por coma" }),
+        S("Likes iniciales", p, "likes", { type: "number" }),
+        S("Imagen (opcional)", p, "image", { upload: true, thumb: true, wide: true }),
+        T("Texto", p, "body", { type: "textarea", rows: 9, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
       ],
     });
   }
@@ -641,17 +627,16 @@
       create: () => ({ title: "Título", artist: "", note: "", url: "", cover: "" }),
       title: (m) => (m.title || "sin título") + (m.artist ? " — " + m.artist : ""),
       fields: (m) => [
-        field("Canción / álbum", m, "title"),
-        field("Artista", m, "artist"),
-        field("Enlace", m, "url", { wide: true, hint: "Si es de YouTube se podrá reproducir en la página" }),
-        field("Portada (opcional)", m, "cover", {
+        S("Canción / álbum", m, "title"),
+        S("Artista", m, "artist"),
+        S("Enlace", m, "url", { wide: true, hint: "Si es de YouTube se podrá reproducir en la página" }),
+        S("Portada (opcional)", m, "cover", {
           upload: true, thumb: true, wide: true,
           pick: () => coverGroups(m),
           pickOpen: coverGroups(m)[0].items.length > 0,
           pickLabel: "♪ Reusar la carátula de otra canción o elegir una ya subida",
         }),
-        field("Por qué la recomiendas", m, "note", { type: "textarea", rows: 3, wide: true }),
-        field("🇬🇧 Why I recommend it (English)", m, "note_en", { type: "textarea", rows: 3, wide: true }),
+        T("Por qué la recomiendas", m, "note", { type: "textarea", rows: 3, wide: true }),
       ],
     });
   }
@@ -662,14 +647,19 @@
       create: () => ({ src: "", caption: "" }),
       title: (g) => g.caption || g.src || "sin título",
       fields: (g) => [
-        field("Imagen", g, "src", { upload: true, thumb: true, wide: true }),
-        field("Texto", g, "caption", { wide: true }),
-        field("🇬🇧 Caption (English)", g, "caption_en", { wide: true }),
+        S("Imagen", g, "src", { upload: true, thumb: true, wide: true }),
+        T("Texto", g, "caption", { wide: true }),
       ],
     });
   }
 
   function tabGifs() {
+    if (editLang === "en") {
+      return el("div", null,
+        el("p", { class: "hint" }, "Los gifs y fondos son iguales en los dos idiomas. Solo el título del cuadro del inicio se traduce."),
+        el("div", { class: "grid-2" }, T("Título del cuadro", data.homeBox, "title", { wide: true }))
+      );
+    }
     const P = window.PAGE_GIFS;
     const top = data.topGif, hb = data.homeBox, bgs = data.backgrounds;
     const root = el("div");
@@ -716,8 +706,7 @@
       el("p", { class: "hint" }, "El cuadro que aparece debajo de «Última transmisión», solo en el inicio. Si lo dejas vacío, se oculta."),
       el("div", { class: "grid-2" },
         field("Gif / imagen", hb, "src", { upload: true, thumb: true, wide: true }),
-        field("Título del cuadro", hb, "title", { wide: true, hint: "Opcional. Con título va dentro de un cuadro; sin título se muestra solo." }),
-        field("🇬🇧 Box title (English)", hb, "title_en", { wide: true })
+        field("Título del cuadro", hb, "title", { wide: true, hint: "Opcional. Con título va dentro de un cuadro; sin título se muestra solo." })
       ),
       el("div", { class: "btn-row" }, clearBox, resetBox, el("a", { href: "../index.html?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
     );
@@ -734,162 +723,6 @@
     log.className = "log" + (cls ? " " + cls : "");
     log.textContent = msg;
     if (link) log.append(document.createTextNode("\n"), el("a", { href: link.href, target: "_blank", rel: "noopener" }, link.text));
-  }
-
-  // ---------- mensajes de los visitantes (firmas y comentarios) ----------
-  const NC_RE = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
-
-  // lee el formato que genera js/social.js; devuelve null si no es un mensaje válido
-  function parseIssue(issue) {
-    const body = String(issue.body || "").replace(/\r/g, "");
-    const tk = (/^tipo:[ \t]*(firma|comentario)[ \t]*$/m.exec(body) || [])[1];
-    const kind = tk || (/^\[Firma\]/.test(issue.title || "") ? "firma" : /^\[Comentario\]/.test(issue.title || "") ? "comentario" : "");
-    if (!kind) return null;
-    const line = (k) => { const m = new RegExp("^" + k + ":[ \\t]*(.*)$", "m").exec(body); return m ? m[1].trim() : ""; };
-    const mi = ("\n" + body).indexOf("\nmensaje:\n");
-    let text = mi < 0 ? "" : body.slice(mi + 9).split("\n\n(Envía este mensaje")[0].trim();
-    text = text.slice(0, 300);
-    if (!text) return null;
-    const nc = line("neocities");
-    const neocities = NC_RE.test(nc) ? nc.toLowerCase() : "";
-    return { kind, post: line("entrada"), name: neocities || line("nombre").slice(0, 32) || "Anónimo", neocities, text, number: issue.number, url: issue.html_url, who: issue.user && issue.user.login };
-  }
-
-  // mensaje que viene en el enlace del aviso (#msg=<texto>); se lee una vez
-  let hashMsg = null;
-  try {
-    const m = /^#msg=(.+)$/.exec(location.hash);
-    if (m) {
-      hashMsg = parseIssue({ title: "", body: decodeURIComponent(m[1]) });
-      history.replaceState(null, "", location.pathname + location.search);
-    }
-  } catch (e) {}
-
-  function tabMensajes() {
-    const root = el("div");
-    const out = el("div", { class: "inbox" });
-    const msg = el("p", { class: "hint" });
-    const find = el("button", { type: "button", class: "btn" }, "🔄 Buscar mensajes nuevos");
-
-    const closeIssue = async (n, reason) => {
-      if (!n) return true; // llegó por el aviso o pegado a mano: no hay Issue que cerrar
-      const r = await api("PATCH", repoPath() + "/issues/" + n, { state: "closed", state_reason: reason });
-      return r.ok;
-    };
-
-    function card(m) {
-      const box = el("div", { class: "item-body inbox-item" });
-      let post = null;
-      if (m.kind === "comentario") post = data.posts.find((x) => x.id === m.post);
-      box.append(
-        el("p", null, el("b", null, m.kind === "firma" ? "✉ Firma" : "💬 Comentario" + (post ? " en «" + post.title + "»" : " (entrada no encontrada)")), " · ", m.neocities ? "👽 " + m.neocities : m.name, m.who ? "  · GitHub: " + m.who : ""),
-        el("blockquote", null, m.text)
-      );
-      const ok = el("button", { type: "button", class: "btn" }, "✔ Aprobar");
-      const pub = el("button", { type: "button", class: "btn go" }, "✔ Aprobar y publicar");
-      const no = el("button", { type: "button", class: "btn danger" }, "✕ Descartar");
-      const plog = el("div", { class: "log", hidden: true });
-      const add = () => {
-        const base = { name: m.name, neocities: m.neocities, date: todayISO() };
-        if (m.kind === "firma") data.guestbook.unshift(Object.assign({ message: m.text }, base));
-        else (post = data.posts.find((x) => x.id === m.post)).comments = (post.comments || []).concat(Object.assign({ text: m.text }, base));
-        changed();
-      };
-      // aprobar + guardar en GitHub + publicar en Neocities, todo con un clic
-      pub.onclick = async () => {
-        if (!configReady()) { plog.hidden = false; return sayTo(plog, "Conecta el panel primero (pestaña «Guardar y publicar»: usuario, repo y token).", "err"); }
-        ok.disabled = pub.disabled = no.disabled = true; plog.hidden = false;
-        if (m === hashMsg) hashMsg = null; // ya se está procesando: que no reaparezca
-        try {
-          if (!isDirty()) { sayTo(plog, "Cargando la última versión de GitHub…"); await syncFromGitHub(true, true); post = m.kind === "comentario" ? data.posts.find((x) => x.id === m.post) : null; }
-          if (m.kind === "comentario" && !post) throw new Error("La entrada de ese comentario ya no existe.");
-          add();
-          sayTo(plog, "Guardando en GitHub…");
-          await putFile(CONTENT_PATH, toBase64(serialize()), (m.kind === "firma" ? "Firma" : "Comentario") + " aprobado desde el panel");
-          original = clone(data);
-          try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-          $("#draft-banner").hidden = true;
-          closeIssue(m.number, "completed").catch(() => {});
-          sayTo(plog, "Guardado ✔ Publicando en Neocities…");
-          let prevId = 0;
-          try { const rs = await listRuns("deploy.yml", "event=workflow_dispatch&per_page=1"); prevId = rs[0] ? rs[0].id : 0; } catch (e) {}
-          const r = await api("POST", repoPath() + "/actions/workflows/deploy.yml/dispatches", { ref: cfg.branch });
-          if (!r.ok) throw await apiError(r);
-          setPending(true);
-          const run = await watchRun("deploy.yml", "event=workflow_dispatch&per_page=5", (rs) => rs.find((x) => x.id > prevId), (x) => sayTo(plog, "Neocities: " + (x ? runLabel(x) : "esperando que empiece…")));
-          if (run && run.conclusion === "success") { setPending(false); sayTo(plog, "✔ Aprobado y publicado: ya lo ve todo el mundo.", "ok"); }
-          else sayTo(plog, run ? "El deploy falló (" + run.conclusion + ")." : "Guardado; el deploy sigue en proceso (revisa Actions).", run ? "err" : "", run && run.html_url ? { href: run.html_url, text: "→ ver en Actions" } : null);
-          refreshStatus();
-        } catch (e) { sayTo(plog, e.message, "err"); ok.disabled = pub.disabled = no.disabled = false; }
-      };
-      const done = (t) => { if (m === hashMsg) hashMsg = null; box.replaceChildren(el("p", { class: "hint" }, t)); };
-      ok.disabled = m.kind === "comentario" && !post;
-      ok.onclick = async () => {
-        ok.disabled = pub.disabled = no.disabled = true;
-        add();
-        let closed = false;
-        try { closed = await closeIssue(m.number, "completed"); } catch (e) {}
-        done("✔ Aprobado y añadido. " + (closed ? "Issue cerrada." : "No pude cerrar la Issue #" + m.number + " (el token necesita permiso Issues: Read and write); ciérrala a mano.") + " Falta guardar y publicar.");
-      };
-      no.onclick = async () => {
-        ok.disabled = pub.disabled = no.disabled = true;
-        let closed = false;
-        try { closed = await closeIssue(m.number, "not_planned"); } catch (e) {}
-        done(closed ? "Descartado (Issue cerrada)." : "No pude cerrar la Issue #" + m.number + "; ciérrala a mano en GitHub.");
-      };
-      box.append(el("div", { class: "btn-row" }, pub, ok, no, m.url && el("a", { href: m.url, target: "_blank", rel: "noopener" }, "ver en GitHub")), plog);
-      return box;
-    }
-
-    find.onclick = async () => {
-      if (!configReady()) { msg.textContent = "Primero conecta GitHub en la pestaña «Guardar y publicar» (usuario, repo y token)."; return; }
-      find.disabled = true; msg.textContent = "Buscando…"; out.replaceChildren();
-      try {
-        const r = await api("GET", repoPath() + "/issues?state=open&per_page=100");
-        if (!r.ok) throw await apiError(r);
-        const list = (await r.json()).filter((i) => !i.pull_request).map(parseIssue).filter(Boolean).reverse();
-        msg.textContent = list.length ? list.length + " mensaje(s) por revisar. Lo que apruebes queda en el borrador: luego guarda y publica." : "No hay mensajes nuevos.";
-        list.forEach((m) => out.append(card(m)));
-      } catch (e) { msg.textContent = "No pude leer las Issues: " + e.message + " (el token necesita permiso Issues: Read)."; }
-      find.disabled = false;
-    };
-
-    const paste = el("textarea", { rows: 6, placeholder: "tipo: firma\nnombre: …\nneocities: …\nmensaje:\n…" });
-    const pasteBtn = el("button", { type: "button", class: "btn" }, "+ Añadir a la lista de pendientes");
-    pasteBtn.onclick = () => {
-      const m = parseIssue({ title: "", body: paste.value });
-      if (!m) { msg.textContent = "No reconozco ese mensaje: debe empezar con «tipo: firma» o «tipo: comentario» e incluir «mensaje:»."; return; }
-      m.who = ""; out.append(card(m)); paste.value = ""; msg.textContent = "Añadido abajo, en «Mensajes por aprobar».";
-    };
-    const pasteBox = el("div", null, paste, el("div", { class: "btn-row" }, pasteBtn));
-
-    // llegó desde el botón «Revisar y aprobar» de la notificación (enlace #msg=…)
-    if (hashMsg) { out.append(card(hashMsg)); msg.textContent = "Mensaje recibido desde tu aviso:"; }
-
-    root.append(
-      el("h3", { class: "sec" }, "MENSAJES POR APROBAR"),
-      el("p", { class: "hint" }, "Los visitantes mandan su firma o comentario sin necesitar nada (te llega un aviso de ntfy, o una Issue de tu repo si no hay ntfy). Aquí los revisas: al aprobar se añaden al libro de visitas o a la entrada, y al publicar los ve todo el mundo."),
-      el("div", { class: "btn-row" }, find, el("a", { href: "https://github.com/" + (cfg.owner || "") + "/" + (cfg.repo || "") + "/issues", target: "_blank", rel: "noopener" }, "abrir Issues en GitHub")),
-      msg, out,
-      el("h3", { class: "sec" }, "PEGAR UN MENSAJE A MANO"),
-      el("p", { class: "hint" }, "Si prefieres no usar el botón del aviso, copia el texto del mensaje (desde «tipo:» hasta el final) y pégalo aquí."),
-      pasteBox,
-      el("h3", { class: "sec" }, "FIRMAS DEL LIBRO DE VISITAS"),
-      el("p", { class: "hint" }, "Ya aprobadas (las ve todo el mundo). Puedes editarlas, borrarlas o añadir una a mano. Los comentarios de cada entrada se editan en la pestaña Blogs."),
-      listPanel(data.guestbook, {
-        addLabel: "+ Añadir firma",
-        create: () => ({ name: "Anónimo", neocities: "", message: "", date: todayISO() }),
-        title: (g) => (g.date || "") + " — " + (g.neocities ? "👽 " + g.neocities : g.name || "Anónimo") + ": " + String(g.message || "").slice(0, 40),
-        fields: (g) => [
-          field("Nombre", g, "name"),
-          field("Usuario de Neocities (opcional)", g, "neocities"),
-          field("Fecha", g, "date", { type: "date" }),
-          el("span"),
-          field("Mensaje", g, "message", { type: "textarea", rows: 3, wide: true }),
-        ],
-      })
-    );
-    return root;
   }
 
   function tabPublicar() {
@@ -1061,11 +894,24 @@
   }
 
   // ---------- navegación ----------
+  const PAGES = { index: "Inicio", blog: "Blogs", musica: "Música", "sobre-mi": "Sobre mí", galeria: "Galería", "libro-de-visitas": "Visitas" };
+  const PREVIEW = { sitio: ["index", "blog"], textos: ["index", "sobre-mi"], blogs: ["blog"], musica: ["musica"], galeria: ["galeria"], gifs: Object.keys(PAGES) };
+  const TRANSLATABLE = ["sitio", "textos", "blogs", "musica", "galeria", "gifs"];
+  let current = "sitio";
+
   function show(name) {
+    current = name;
     const t = TABS[name];
-    $("#panel-title").textContent = t.title;
+    $("#panel-title").textContent = t.title + (editLang === "en" && TRANSLATABLE.indexOf(name) >= 0 ? " · 🇬🇧 ENGLISH" : "");
     const panel = $("#panel");
     panel.innerHTML = "";
+    if (PREVIEW[name]) {
+      panel.append(el("div", { class: "preview-bar" }, "👁 Vista previa de esta pestaña:",
+        PREVIEW[name].map((k) => el("a", { href: "../" + (k === "index" ? "index" : k) + ".html?preview=1&lang=" + editLang, target: "_blank", rel: "noopener" }, PAGES[k]))));
+    }
+    if (editLang === "en" && TRANSLATABLE.indexOf(name) >= 0) {
+      panel.append(el("p", { class: "hint lang-note" }, "Estás escribiendo la versión en inglés. Lo que dejes vacío se mostrará en español. Los campos que no se traducen (fechas, imágenes, enlaces…) están en la vista en español."));
+    }
     panel.append(t.render());
     document.querySelectorAll("#admin-tabs a[data-tab]").forEach((a) => a.classList.toggle("active", a.dataset.tab === name));
   }
@@ -1073,6 +919,20 @@
   document.querySelectorAll("#admin-tabs a[data-tab]").forEach((a) => {
     a.addEventListener("click", (e) => { e.preventDefault(); show(a.dataset.tab); });
   });
+
+  // ---------- interruptor de idioma (esquina) ----------
+  const langBox = $("#admin-lang");
+  if (langBox) {
+    const paint = () => langBox.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.l === editLang));
+    ["es", "en"].forEach((l) => {
+      langBox.append(el("button", { type: "button", "data-l": l, title: l === "es" ? "Escribir en español" : "Write in English", onclick: () => {
+        editLang = l;
+        try { localStorage.setItem("alienmax-admin-lang", l); } catch (e) {}
+        paint(); show(current);
+      } }, l.toUpperCase()));
+    });
+    paint();
+  }
 
   // ---------- borrador previo ----------
   try {
@@ -1092,8 +952,7 @@
     data = clone(original);
     $("#draft-banner").hidden = true;
     paintPill();
-    const active = document.querySelector("#admin-tabs a.active[data-tab]");
-    show(active ? active.dataset.tab : "sitio");
+    show(current);
   });
 
   // avisar si se cierra con cambios sin publicar
@@ -1102,7 +961,7 @@
   });
 
   paintPill();
-  show(hashMsg ? "mensajes" : "sitio");
+  show("sitio");
 
   // si el panel ya conoce el repo y el token, trae la versión real de GitHub
   // (la copia de Pages puede estar en caché o desactualizada)
