@@ -22,11 +22,41 @@ window.SITE = {
     ],
     "motto": "I hope the aliens believe in me.",
     "friends": [
+<<<<<<< HEAD
       "Test"
     ]
   },
   "posts": [],
   "music": [],
+=======
+      "https://x.com/XSamtheGhost_"
+    ]
+  },
+  "posts": [
+    {
+      "id": "pmwsbh99u",
+      "title": "¡Página en marcha blanca! (o morada en este caso)",
+      "date": "2026-11-22",
+      "mood": "Emocionado",
+      "tags": [
+        "Marcha Blanca"
+      ],
+      "image": "assets/alienmax.gif",
+      "likes": 0,
+      "body": "Primer blog de la pagina WOHO!\n\nAhora si, me ha tomado tiempo diseñar la pagina y varia gente de [neocities](https://neocities.org/) ha encontrado la pagina cuando no estaba lista, pero creo que nadie interactuo debido a que estaba en español.\n\nAún no funciona el contador de visitas, así que hay que ignorarlo por ahora kjsjksjs.\n\nAhora que esta más desarrollada, puedo empezar a escribir blog, recomendar canciones y otras cosas.\n\nNos vemos!\n\n- Max 💜",
+      "comments": []
+    }
+  ],
+  "music": [
+    {
+      "title": "Walkin' On The Sun",
+      "artist": "Smash Mouth",
+      "note": "Una de las mejores canciones de Smash Mouth (en mi parecer), siempre me levanta el animo. Aunque me gustaria que menos gente los reconociera por una de sus canciones en Shrek.",
+      "url": "https://www.youtube.com/watch?v=LQj--Kjn0z8",
+      "cover": "assets/uploads/mwsbriiu-1000106954.jpg"
+    }
+  ],
+>>>>>>> adc9a93c0ed109fe756285bbf969301f0af44c8f
   "gallery": [],
   "topGif": {
     "src": "assets/flower.gif",
