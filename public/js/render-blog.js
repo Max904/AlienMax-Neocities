@@ -7,36 +7,37 @@
   const box = document.getElementById("posts");
   if (!box) return;
 
-  const A = window.SOCIAL_API;
+  const A = window.SOCIAL_API, T = window.I18N.t, F = U.f;
   const staticComments = (arr) => arr.map((c) => '<div class="comment"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + (c.date ? " <small>" + A.fmt(c.date) + "</small>" : "") + "</div>").join("");
 
   // ---- entradas ----
   function postHTML(p, i) {
-    const tags = p.tags || [];
+    const tags = F(p, "tags") || [];
     const comments = p.comments || [];
     const img = U.safeUrl(p.image);
+    const mood = F(p, "mood");
     const HC = window.HCB && window.HCB.enabled;
     const commentsHTML =
       '<div class="comment-list" id="cl' + i + '">' + staticComments(comments) + "</div>" +
       (HC ? window.HCB.tip + '<div class="hcb-host" data-key="' + U.esc(window.HCB.key("blog/" + (p.id || "post" + i))) + '"></div>' : '<form class="comment-form" data-post="' + U.esc(p.id || "post" + i) + '" data-i="' + i + '">' +
-        '<textarea name="text" maxlength="300" rows="2" placeholder="Escribe un comentario…" required></textarea>' +
+        '<textarea name="text" maxlength="300" rows="2" placeholder="' + T("cm.ph") + '" required></textarea>' +
         '<input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
         A.identityHTML("c" + i) +
-        '<div class="row"><button type="submit">Comentar</button><span class="form-status"></span></div>' +
+        '<div class="row"><button type="submit">' + T("cm.send") + '</button><span class="form-status"></span></div>' +
       "</form>");
 
     return (
       '<article class="post" data-tags="' + U.esc(tags.map(U.slug).join(" ")) + '">' +
-        '<div class="post-head"><h2>' + U.esc(p.title) + '</h2><span class="post-date">' + U.fmtDate(p.date) + "</span></div>" +
+        '<div class="post-head"><h2>' + U.esc(F(p, "title")) + '</h2><span class="post-date">' + U.fmtDate(p.date) + "</span></div>" +
         '<div class="post-body">' +
           (img ? '<img class="inline" src="' + U.esc(img) + '" alt="">' : "") +
-          U.paragraphs(p.body) +
+          U.paragraphs(F(p, "body")) +
         "</div>" +
         '<div class="post-foot">' +
           '<div class="tags">' + tags.map((t) => "<span>" + U.esc(t) + "</span>").join("") + "</div>" +
-          (p.mood ? '<span class="mood">Ánimo: ' + U.esc(p.mood) + "</span>" : "") +
+          (mood ? '<span class="mood">' + T("blog.mood") + " " + U.esc(mood) + "</span>" : "") +
           '<button class="like-btn" data-post="' + U.esc(p.id || "post" + i) + '" data-base="' + (parseInt(p.likes, 10) || 0) + '"></button>' +
-          '<button class="comment-toggle" data-target="c' + i + '">💬 comentarios' + (HC ? "" : " (" + comments.length + ")") + "</button>" +
+          '<button class="comment-toggle" data-target="c' + i + '">' + T("blog.comments") + (HC ? "" : " (" + comments.length + ")") + "</button>" +
         "</div>" +
         '<div class="comments" id="c' + i + '">' + commentsHTML + "</div>" +
       "</article>"
@@ -45,7 +46,7 @@
 
   box.innerHTML = posts.length
     ? posts.map(postHTML).join("")
-    : '<div class="box"><div class="box-body">Todavía no hay entradas.</div></div>';
+    : '<div class="box"><div class="box-body">' + T("blog.empty") + '</div></div>';
 
   const articles = box.querySelectorAll(".post");
 
@@ -53,9 +54,9 @@
   const bar = document.getElementById("filter-bar");
   if (bar) {
     const seen = {};
-    posts.forEach((p) => (p.tags || []).forEach((t) => (seen[U.slug(t)] = t)));
+    posts.forEach((p) => (F(p, "tags") || []).forEach((t) => (seen[U.slug(t)] = t)));
     bar.innerHTML =
-      '<span style="color:var(--lilac)">Filtrar:</span><button class="active" data-tag="todos">TODOS</button>' +
+      '<span style="color:var(--lilac)">' + T("blog.filter") + '</span><button class="active" data-tag="todos">' + T("blog.all") + '</button>' +
       Object.keys(seen).map((k) => '<button data-tag="' + U.esc(k) + '">' + U.esc(seen[k].toUpperCase()) + "</button>").join("");
 
     const buttons = bar.querySelectorAll("button");
@@ -84,7 +85,7 @@
     const keys = Object.keys(groups).sort().reverse();
     archive.innerHTML = keys.length
       ? keys.map((k) => "<li>" + U.esc(groups[k].label) + " (" + groups[k].n + ")</li>").join("")
-      : "<li>Sin entradas</li>";
+      : "<li>" + T("blog.none") + "</li>";
   }
 
   // ---- likes: el total es el mismo para todos (counters.js) y cada navegador puede dar y quitar el suyo ----
@@ -163,14 +164,14 @@
 
   function paintComments(i, p) {
     const id = p.id || "post" + i;
-    const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>pendiente de aprobación</small></div>");
+    const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>" + T("gb.pending") + "</small></div>");
     const approved = p.comments || [];
     const list = document.getElementById("cl" + i);
-    const none = window.HCB && window.HCB.enabled ? "" : '<div class="comment">Aún no hay comentarios. ¡Sé el primero!</div>';
+    const none = window.HCB && window.HCB.enabled ? "" : '<div class="comment">' + T("cm.none") + "</div>";
     list.innerHTML = mine.join("") + staticComments(approved) || none;
     if (window.HCB && window.HCB.enabled) return;
     const btn = box.querySelector('.comment-toggle[data-target="c' + i + '"]');
-    if (btn) btn.textContent = "💬 comentarios (" + approved.length + ")";
+    if (btn) btn.textContent = T("blog.comments") + " (" + approved.length + ")";
   }
 
   box.querySelectorAll(".comment-form").forEach((form) => {
@@ -185,7 +186,7 @@
       const who = A.readIdentity(form, "c" + i);
       if (who.error) { say(who.error, true); return; }
       if (!text) return;
-      if (!A.cooldown()) { say("Espera unos segundos antes de comentar otra vez.", true); return; }
+      if (!A.cooldown()) { say(T("cm.wait"), true); return; }
       const btn = form.querySelector("button[type=submit]");
       btn.disabled = true; say("Enviando…");
       const r = await A.send("comentario", who, text, { id: id, title: p.title });

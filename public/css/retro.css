@@ -280,3 +280,13 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: bold; }
 .hcb-fields .nc-input { width: auto; flex: 1 1 180px; max-width: 280px; }
 .hcb-suf { color: #c9a7ff; font-size: 12px; }
 .hcb-as { margin: 0; }
+
+/* ---- interruptor de idioma ES / EN ---- */
+.site-header { position: relative; }
+.lang-switch { position: absolute; top: 8px; right: 10px; display: flex; gap: 3px; z-index: 5; }
+.lang-switch button {
+  font-family: var(--font-pixel); font-size: 10px; font-weight: bold; padding: 3px 8px; cursor: pointer; color: #fff;
+  border: 1px solid #2a0d55; border-radius: 3px; text-shadow: 0 -1px 0 rgba(0,0,0,.5);
+  background: linear-gradient(180deg, #9a5cf5, #6a2fd0 50%, #5a22b8 51%, #6c32d6);
+}
+.lang-switch button.on { color: #2a0d55; text-shadow: none; background: linear-gradient(180deg, #ffd6f5, #ff9be0 50%, #f27ccf 51%, #ff9be0); }

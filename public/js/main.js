@@ -18,7 +18,7 @@
         show(START + v);
         counterEl.title = "";
       }).catch((e) => {
-        counterEl.title = "No pude conectar con el contador compartido (" + (e && e.message || "error") + "); se muestra el último valor.";
+        counterEl.title = window.I18N.t("counter.err") + " (" + (e && e.message || "error") + ")";
         if (window.console) console.warn("contador de visitas:", e);
       });
     }
@@ -29,7 +29,7 @@
   if (clockEl) {
     const tick = () => {
       const d = new Date();
-      clockEl.textContent = d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      clockEl.textContent = d.toLocaleTimeString(window.I18N.locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     };
     tick();
     setInterval(tick, 1000);

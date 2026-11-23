@@ -22,6 +22,7 @@
   // 2) cuadro grande del inicio
   document.querySelectorAll("[data-home-box]").forEach((slot) => {
     const cfg = P.homeBox(S);
+    if (window.I18N.en && S.homeBox && S.homeBox.title_en) cfg.title = S.homeBox.title_en;
     const src = U.safeUrl(cfg.src);
     if (!src) { slot.remove(); return; }
     const img = new Image();

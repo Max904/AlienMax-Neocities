@@ -4,13 +4,13 @@
   const A = S.about || {};
 
   const intro = document.getElementById("about-intro");
-  if (intro) intro.innerHTML = U.paragraphs(A.intro);
+  if (intro) intro.innerHTML = U.paragraphs(U.f(A, "intro"));
 
   const favs = document.getElementById("about-favs");
-  if (favs) favs.innerHTML = (A.favorites || []).map((f) => "<li>" + U.esc(f) + "</li>").join("");
+  if (favs) favs.innerHTML = (U.f(A, "favorites") || []).map((f) => "<li>" + U.esc(f) + "</li>").join("");
 
   const motto = document.getElementById("about-motto");
-  if (motto) motto.textContent = A.motto ? '"' + A.motto + '"' : "";
+  if (motto) { const mo = U.f(A, "motto"); motto.textContent = mo ? '"' + mo + '"' : ""; }
 
   const friends = document.getElementById("about-friends");
   if (friends) {

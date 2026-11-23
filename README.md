@@ -180,3 +180,12 @@ Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto
 ## Comentarios y firmas con HTML Comment Box
 
 Los comentarios del blog y las firmas del libro de visitas usan [HTML Comment Box](https://www.htmlcommentbox.com/): aparecen de inmediato, sin aprobación y sin commits. El código del widget está en `public/js/hcb.js` y la clave de tu cuenta (`mod`) en `public/data/social.js` → `hcb`. Cada entrada tiene su propio hilo (`blog/<id>`) y el libro de visitas el suyo. Para borrar o moderar, entra a htmlcommentbox.com con tu cuenta de Google. Con `mod` vacío vuelven los formularios con aprobación por ntfy.
+
+
+## Español / inglés
+
+La página detecta el idioma del navegador y tiene un interruptor **ES | EN** arriba a la derecha (se recuerda; también funciona `?lang=en`).
+
+- **Textos fijos** (menú, títulos, botones…): están en `public/js/i18n.js`.
+- **Tu contenido**: cada texto tiene su versión en inglés con el sufijo `_en` (`title_en`, `body_en`, `note_en`, `tags_en`…). En el panel aparecen como campos «🇬🇧 … (English)». Si dejas uno vacío, los visitantes en inglés ven el texto en español.
+- **Comentarios y firmas**: los botones «Comentar como» y el widget se traducen. Los comentarios que escribe la gente se muestran en el idioma en que se escribieron (no se traducen solos).

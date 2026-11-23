@@ -17,8 +17,9 @@
 
   const S = window.SITE || {};
 
-  const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-  const MESES_LARGO = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const I = window.I18N;
+  const MESES = I.months;
+  const MESES_LARGO = I.monthsLong;
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -68,11 +69,15 @@
     return String(t || "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9áéíóúñü-]/g, "");
   }
 
+  // valor de data/content.js; en inglés usa «campo_en» si existe
   function get(path) {
-    return path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), S);
+    const keys = path.split(".");
+    const last = keys.pop();
+    const parent = keys.reduce((o, k) => (o == null ? undefined : o[k]), S);
+    return parent == null ? undefined : I.f(parent, last);
   }
 
-  window.SITE_UTIL = { esc, safeUrl, paragraphs, fmtDate, monthKey, slug, get };
+  window.SITE_UTIL = { esc, safeUrl, paragraphs, fmtDate, monthKey, slug, get, f: I.f };
 
   document.querySelectorAll("[data-bind]").forEach((el) => {
     const v = get(el.dataset.bind);
@@ -85,6 +90,7 @@
   });
 
   // título de la pestaña del navegador
-  const part = document.body.dataset.pageTitle;
-  if (S.site && S.site.title) document.title = "✦ " + S.site.title + " ✦ " + (part || "");
+  const part = I.t("page." + document.documentElement.dataset.page);
+  const title = S.site && I.f(S.site, "title");
+  if (title) document.title = "✦ " + title + " ✦ " + (part || "");
 })();

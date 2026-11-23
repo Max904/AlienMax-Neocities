@@ -7,6 +7,7 @@
 (function () {
   const C = (window.SOCIAL && window.SOCIAL.hcb) || {};
   const H = "https://www.htmlcommentbox.com";
+  const T = window.I18N.t, EN = window.I18N.en;
   const enabled = !!(C.mod && /^[\w$.%\-]+$/.test(C.mod));
 
   // cada hilo va en su propio iframe: así cada entrada tiene sus comentarios y no se mezclan
@@ -50,6 +51,41 @@
     } catch (e) { return null; }
   }
 
+  // el widget viene en inglés: en español se traducen sus textos conocidos (lo que no conozco se queda en inglés)
+  const ES = { "Comments": "Comentarios", "Name": "Nombre", "Enter your comment here": "Escribe tu comentario aquí", "Comment": "Comentar", "Add Image": "Añadir imagen",
+    "Post another comment": "Publicar otro comentario", "Like": "Me gusta", "Unlike": "Ya no me gusta", "Reply": "Responder", "Flag": "Reportar", "Cancel": "Cancelar", "Delete": "Eliminar", "Edit": "Editar",
+    "Not using": "¿Aún no usas", "yet?": "?", "No one has commented yet. Be the first!": "Nadie ha comentado aún. ¡Sé el primero!", "Show more": "Ver más", "Load more": "Cargar más",
+    "within the last minute": "hace menos de un minuto", "Anonymous": "Anónimo", "Reply to": "Responder a", "Post": "Publicar", "Submit": "Enviar", "Your comment": "Tu comentario" };
+  const UNITS = { second: "segundo", minute: "minuto", hour: "hora", day: "día", week: "semana", month: "mes", year: "año" };
+  function toEs(txt) {
+    const m = /^(\s*[·•]?\s*)(.*?)(\s*[·•]?\s*)$/s.exec(txt);
+    const core = m[2];
+    if (ES[core]) return (ES[core] === "?" ? "" : m[1]) + ES[core] + m[3];
+    const ago = /^(\d+|an?|one) (second|minute|hour|day|week|month|year)s? ago$/i.exec(core);
+    if (ago) {
+      const n = /^\d+$/.test(ago[1]) ? +ago[1] : 1, u = UNITS[ago[2].toLowerCase()];
+      return m[1] + "hace " + n + " " + (n === 1 ? u : (u === "mes" ? "meses" : u + "s")) + m[3];
+    }
+    return null;
+  }
+  // «Anónimo» / «Anonymous» se muestra en el idioma de quien lee
+  function localize(d) {
+    const w = d.createTreeWalker(d.getElementById("HCB_comment_box") || d.body, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      const par = n.parentNode;
+      if (!par || /^(SCRIPT|STYLE|TEXTAREA)$/.test(par.nodeName)) continue;
+      const raw = n.nodeValue;
+      if (!raw.trim()) continue;
+      if (/^\s*an[óo]nim(o|ous)\s*$/i.test(raw)) { const v = T("anon"); if (raw.trim() !== v) n.nodeValue = raw.replace(raw.trim(), v); continue; }
+      if (EN) continue;
+      const out = toEs(raw);
+      if (out != null && out !== raw) n.nodeValue = out;
+    }
+    if (EN) return;
+    d.querySelectorAll("#HCB_comment_box [placeholder]").forEach((el) => { const v = ES[el.getAttribute("placeholder")]; if (v) el.setAttribute("placeholder", v); });
+    d.querySelectorAll("#HCB_comment_box input[type=submit],#HCB_comment_box input[type=button]").forEach((el) => { const v = ES[el.value]; if (v) el.value = v; });
+  }
+
   function linkNames(f, ident) {
     let d;
     try { d = f.contentDocument; } catch (e) { return; }
@@ -66,6 +102,7 @@
       }
     };
     const run = () => {
+      localize(d);
       // «Thank you for commenting!»
       d.querySelectorAll("#HCB_comment_box *").forEach((el) => {
         if (el.children.length === 0 && /^\s*thank you for commenting!?\s*$/i.test(el.textContent)) hide(el);
@@ -113,13 +150,13 @@
     const bar = document.createElement("div");
     bar.className = "hcb-ident";
     bar.innerHTML =
-      '<div class="hcb-modes" role="radiogroup" aria-label="Comentar como">' +
-        '<button type="button" class="hcb-mode on" data-m="anon">👤 Anónimo</button>' +
-        '<button type="button" class="hcb-mode" data-m="nc">🛸 Usuario de Neocities</button>' +
-        '<button type="button" class="hcb-mode" data-m="custom">🔗 Nombre y enlace</button>' +
+      '<div class="hcb-modes" role="radiogroup" aria-label="' + T("cm.as") + '">' +
+        '<button type="button" class="hcb-mode on" data-m="anon">' + T("id.anon") + '</button>' +
+        '<button type="button" class="hcb-mode" data-m="nc">' + T("id.nc") + '</button>' +
+        '<button type="button" class="hcb-mode" data-m="custom">' + T("id.custom") + '</button>' +
       "</div>" +
-      '<div class="hcb-fields" data-for="nc" hidden><input type="text" class="nc-input" data-f="user" maxlength="32" placeholder="tuusuario" autocomplete="off" spellcheck="false"><span class="hcb-suf">.neocities.org</span></div>' +
-      '<div class="hcb-fields" data-for="custom" hidden><input type="text" class="nc-input" data-f="name" maxlength="40" placeholder="Tu nombre" autocomplete="off"><input type="text" class="nc-input" data-f="link" maxlength="120" placeholder="Enlace: instagram.com/tuusuario" autocomplete="off" spellcheck="false"></div>' +
+      '<div class="hcb-fields" data-for="nc" hidden><input type="text" class="nc-input" data-f="user" maxlength="32" placeholder="' + T("id.user.ph") + '" autocomplete="off" spellcheck="false"><span class="hcb-suf">.neocities.org</span></div>' +
+      '<div class="hcb-fields" data-for="custom" hidden><input type="text" class="nc-input" data-f="name" maxlength="40" placeholder="' + T("id.name.ph") + '" autocomplete="off"><input type="text" class="nc-input" data-f="link" maxlength="120" placeholder="' + T("id.link.ph") + '" autocomplete="off" spellcheck="false"></div>' +
       '<div class="hcb-as fine"></div>';
     host.appendChild(bar);
     let mode = "anon";
@@ -144,18 +181,18 @@
       } catch (e) {}
     };
     const update = () => {
-      let v = "Anónimo", note = "Comentarás como Anónimo.";
+      let v = "Anónimo", note = T("id.n.anon");
       if (mode === "nc") {
         const u = q('[data-f=user]').value.trim().toLowerCase().replace(/^@/, "").replace(/\.neocities\.org.*$/, "");
-        if (USER_RE.test(u)) { v = "@" + u; note = "Comentarás como " + u + " (enlaza a " + u + ".neocities.org, no se verifica)."; }
-        else note = u ? "Ese usuario de Neocities no es válido: saldrás como Anónimo." : "Escribe tu usuario de Neocities (o elige Anónimo).";
+        if (USER_RE.test(u)) { v = "@" + u; note = T("id.n.nc", { u: u }); }
+        else note = T(u ? "id.n.ncbad" : "id.n.ncempty");
       } else if (mode === "custom") {
         const n = q('[data-f=name]').value.trim().replace(/\s*::\s*/g, " "), l = q('[data-f=link]').value.trim();
         if (n) {
           const pn = l ? parseName(n + " :: " + l) : null;
-          if (pn) { v = n + " :: " + l.replace(/^https?:\/\//i, ""); note = "Comentarás como " + n + " (enlaza a " + pn.title + ")."; }
-          else { v = n; note = l ? "Ese enlace no parece válido: saldrás solo con el nombre." : "Comentarás como " + n + " (sin enlace)."; }
-        } else note = "Escribe tu nombre (y un enlace si quieres).";
+          if (pn) { v = n + " :: " + l.replace(/^https?:\/\//i, ""); note = T("id.n.custom", { n: n, h: pn.title }); }
+          else { v = n; note = l ? T("id.n.linkbad") : T("id.n.customnolink", { n: n }); }
+        } else note = T("id.n.customempty");
       }
       ident.value = v;
       remember();

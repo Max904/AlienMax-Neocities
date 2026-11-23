@@ -7,8 +7,8 @@
   const items = (S.gallery || []).filter((g) => U.safeUrl(g.src));
   grid.innerHTML = items.length
     ? items.map((g) =>
-        '<figure class="gallery-item"><img src="' + U.esc(U.safeUrl(g.src)) + '" alt="' + U.esc(g.caption) + '">' +
-        "<figcaption>" + U.esc(g.caption) + "</figcaption></figure>"
+        '<figure class="gallery-item"><img src="' + U.esc(U.safeUrl(g.src)) + '" alt="' + U.esc(U.f(g, "caption")) + '">' +
+        "<figcaption>" + U.esc(U.f(g, "caption")) + "</figcaption></figure>"
       ).join("")
-    : "<p style='padding:12px'>La galería está vacía.</p>";
+    : "<p style='padding:12px'>" + window.I18N.t("gal.empty") + "</p>";
 })();

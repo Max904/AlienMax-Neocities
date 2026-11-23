@@ -37,11 +37,11 @@
 
   function render() {
     const rows = [];
-    pending.forEach((e) => rows.push({ who: A.who(e), date: "pendiente de aprobación", msg: e.message, cls: " pending" }));
+    pending.forEach((e) => rows.push({ who: A.who(e), date: window.I18N.t("gb.pending"), msg: e.message, cls: " pending" }));
     (S.guestbook || []).forEach((e) => rows.push({ who: A.who(e), date: A.fmt(e.date), msg: e.message, cls: "" }));
     list.innerHTML = rows.length
       ? rows.map((r) => '<div class="guest-entry' + r.cls + '"><b>' + r.who + "</b><small>" + A.esc(r.date) + "</small><p>" + A.esc(r.msg) + "</p></div>").join("")
-      : '<div class="guest-entry">Aún no hay firmas. ¡Sé el primero!</div>';
+      : '<div class="guest-entry">' + window.I18N.t("gb.none") + "</div>";
   }
 
   document.getElementById("g-ident").innerHTML = A.identityHTML("g");
@@ -56,7 +56,7 @@
     const who = A.readIdentity(form, "g");
     if (who.error) { say(who.error, true); return; }
     if (!msg) { say("Escribe un mensaje.", true); return; }
-    if (!A.cooldown()) { say("Espera unos segundos antes de volver a firmar.", true); return; }
+    if (!A.cooldown()) { say(window.I18N.t("gb.wait"), true); return; }
     const btn = form.querySelector("button[type=submit]");
     btn.disabled = true; say("Enviando…");
     const r = await A.send("firma", who, msg);

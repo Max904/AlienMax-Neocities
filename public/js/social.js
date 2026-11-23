@@ -16,14 +16,14 @@
       const u = String(e.neocities).toLowerCase();
       return '<a class="nc-user" href="https://' + u + '.neocities.org" target="_blank" rel="noopener nofollow">👽 ' + esc(u) + "</a>";
     }
-    return '<span class="anon">' + esc(e.name || "Anónimo") + "</span>";
+    return '<span class="anon">' + esc(!e.name || /^an[óo]nim(o|ous)$/i.test(e.name) ? window.I18N.t("anon") : e.name) + "</span>";
   }
 
   function fmt(s) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || "");
     if (m) return m[3] + "/" + m[2] + "/" + m[1];
     const d = new Date(s);
-    return isNaN(d) ? esc(s || "") : d.toLocaleDateString("es-CL");
+    return isNaN(d) ? esc(s || "") : d.toLocaleDateString(window.I18N.locale);
   }
 
   function identityHTML(prefix) {

@@ -18,45 +18,45 @@
 
     <header class="site-header">
       <div class="header-deco" data-top-gif="blog"></div>
-      <h1 class="glow">✦ Blogs de <span data-bind="profile.name">AlienMax</span> ✦</h1>
+      <h1 class="glow"><span data-i18n-html="blog.h1">✦ Blogs de AlienMax ✦</span></h1>
       <p class="tagline"><span data-bind="site.blogTagline">diario de a bordo</span> <span class="blink">_</span></p>
     </header>
 
     <nav class="nav">
-      <a href="index.html">★ Inicio</a>
-      <a href="blog.html" class="active">✎ Blogs</a>
-      <a href="musica.html">♪ Música</a>
-      <a href="sobre-mi.html">👽 Sobre mí</a>
-      <a href="galeria.html">❀ Galería</a>
-      <a href="libro-de-visitas.html">✉ Visitas</a>
+      <a href="index.html" data-i18n="nav.home">★ Inicio</a>
+      <a href="blog.html" class="active" data-i18n="nav.blog">✎ Blogs</a>
+      <a href="musica.html" data-i18n="nav.music">♪ Música</a>
+      <a href="sobre-mi.html" data-i18n="nav.about">👽 Sobre mí</a>
+      <a href="galeria.html" data-i18n="nav.gallery">❀ Galería</a>
+      <a href="libro-de-visitas.html" data-i18n="nav.guestbook">✉ Visitas</a>
     </nav>
 
     <div class="columns">
       <aside class="sidebar">
         <div class="box">
-          <div class="box-title">★ MI PERFIL ★</div>
-          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status">Estado: <span style="color:var(--alien-green)" data-bind="profile.status"></span></p></div></div>
+          <div class="box-title"><span data-i18n="side.profile">★ MI PERFIL ★</span></div>
+          <div class="box-body"><div class="profile"><img class="avatar" data-bind-src="profile.avatar" src="assets/alienmax.gif" alt=""><div class="name" data-bind="profile.name">AlienMax</div><p class="status"><span data-i18n="side.status">Estado:</span> <span style="color:var(--alien-green)" data-bind="profile.status"></span></p></div></div>
         </div>
 
         <div class="box">
-          <div class="box-title">♥ DATOS ♥</div>
-          <div class="box-body"><ul class="stat-list"><li>Planeta: <span data-bind="profile.planet"></span></li><li>Color: <span data-bind="profile.color"></span></li><li>Hora galáctica: <span id="clock"></span></li></ul></div>
+          <div class="box-title"><span data-i18n="side.info">♥ DATOS ♥</span></div>
+          <div class="box-body"><ul class="stat-list"><li><span data-i18n="side.planet">Planeta:</span> <span data-bind="profile.planet"></span></li><li><span data-i18n="side.color">Color:</span> <span data-bind="profile.color"></span></li><li><span data-i18n="side.time">Hora galáctica:</span> <span id="clock"></span></li></ul></div>
         </div>
 
         <div class="box">
-          <div class="box-title">☆ VISITAS ☆</div>
+          <div class="box-title"><span data-i18n="side.visits">☆ VISITAS ☆</span></div>
           <div class="box-body"><div class="counter" id="visit-counter">0001337</div></div>
         </div>
 
         <div class="box">
-          <div class="box-title">♪ BOTONES ♪</div>
+          <div class="box-title"><span data-i18n="side.buttons">♪ BOTONES ♪</span></div>
           <div class="box-body"><div class="buttons-88"><div class="btn-88">ALIEN POWER</div><div class="btn-88">BEST IN PURPLE</div><div class="btn-88">NO HUMANS</div></div></div>
         </div>
       </aside>
 
       <main class="main">
         <div class="box">
-          <div class="box-title">✦ ARCHIVO ✦</div>
+          <div class="box-title"><span data-i18n="blog.archive">✦ ARCHIVO ✦</span></div>
           <div class="box-body"><ul class="stat-list" id="archive"></ul></div>
         </div>
         <div class="box filter-bar" id="filter-bar"></div>
@@ -66,11 +66,12 @@
 
     <footer class="site-footer">
       <img class="pixel" src="assets/purple-purplecore.gif" alt="">
-      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · fondo: ondas moradas de noche
+      © <span id="year">2010</span> <span data-bind="profile.name">AlienMax</span> · <span data-i18n="foot.blog">fondo: ondas moradas de noche</span>
       <img class="pixel" src="assets/purple-purplecore.gif" alt="">
     </footer>
   </div>
 
+  <script src="js/i18n.js"></script>
   <script src="js/stars.js"></script>
   <script src="js/data-bind.js"></script>
   <script src="js/counters.js"></script>

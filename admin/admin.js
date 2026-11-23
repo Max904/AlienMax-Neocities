@@ -43,7 +43,9 @@
     const bg = d.backgrounds || {};
     d.backgrounds = {};
     PG.pages.forEach((pg) => { d.backgrounds[pg.key] = PG.backgroundFor({ backgrounds: bg }, pg.key); });
+    const hbEn = d.homeBox && d.homeBox.title_en;
     d.homeBox = PG.homeBox(d); // acepta el formato antiguo pageGifs.home
+    if (hbEn) d.homeBox.title_en = hbEn;
     delete d.pageGifs;
     return d;
   }
@@ -579,12 +581,19 @@
       field("Título del sitio", s, "title"),
       field("Subtítulo (inicio)", s, "tagline"),
       field("Subtítulo (blogs)", s, "blogTagline"),
-      el("span"),
+      field("🇬🇧 Title (English)", s, "title_en", { hint: "Opcional: si lo dejas vacío se usa el título en español" }),
+      field("🇬🇧 Tagline (home, English)", s, "tagline_en"),
+      field("🇬🇧 Tagline (blogs, English)", s, "blogTagline_en"),
       field("Texto que se desplaza (marquee)", s, "marquee", { type: "textarea", rows: 2, wide: true }),
+      field("🇬🇧 Marquee (English)", s, "marquee_en", { type: "textarea", rows: 2, wide: true }),
       field("Tu nombre de usuario", p, "name"),
+      el("span"),
       field("Estado", p, "status", { hint: "Puedes usar emojis" }),
+      field("🇬🇧 Status (English)", p, "status_en"),
       field("Planeta", p, "planet"),
+      field("🇬🇧 Planet (English)", p, "planet_en"),
       field("Color favorito", p, "color"),
+      field("🇬🇧 Favorite color (English)", p, "color_en"),
       field("Foto de perfil (ruta o URL)", p, "avatar", { upload: true, thumb: true })
     );
   }
@@ -593,9 +602,13 @@
     const h = data.home, a = data.about;
     return el("div", { class: "grid-2" },
       field("Bienvenida del inicio", h, "welcome", { type: "textarea", rows: 8, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
+      field("🇬🇧 Welcome (English)", h, "welcome_en", { type: "textarea", rows: 8, wide: true, hint: "Opcional. Mismo formato." }),
       field("Sobre mí: presentación", a, "intro", { type: "textarea", rows: 5, wide: true }),
+      field("🇬🇧 About me: intro (English)", a, "intro_en", { type: "textarea", rows: 5, wide: true }),
       field("Mis cosas favoritas", a, "favorites", { type: "lines", rows: 6, wide: true, hint: "Una por línea" }),
+      field("🇬🇧 Favorite things (English)", a, "favorites_en", { type: "lines", rows: 6, wide: true, hint: "One per line, same order" }),
       field("Lema", a, "motto", { wide: true }),
+      field("🇬🇧 Motto (English)", a, "motto_en", { wide: true }),
       field("Amigos del espacio (imágenes)", a, "friends", { type: "lines", rows: 4, wide: true, hint: "Una ruta o URL por línea, por ejemplo assets/flower.gif" })
     );
   }
@@ -607,12 +620,16 @@
       title: (p) => (p.date || "sin fecha") + " — " + (p.title || "sin título"),
       fields: (p) => [
         field("Título", p, "title", { wide: true }),
+        field("🇬🇧 Title (English)", p, "title_en", { wide: true }),
         field("Fecha", p, "date", { type: "date" }),
         field("Ánimo", p, "mood", { hint: "Ej: ✦ curioso" }),
+        field("🇬🇧 Mood (English)", p, "mood_en"),
         field("Etiquetas", p, "tags", { type: "tags", hint: "Separadas por coma" }),
+        field("🇬🇧 Tags (English)", p, "tags_en", { type: "tags", hint: "Same order, comma separated" }),
         field("Likes iniciales", p, "likes", { type: "number" }),
         field("Imagen (opcional)", p, "image", { upload: true, thumb: true, wide: true }),
         field("Texto", p, "body", { type: "textarea", rows: 9, wide: true, hint: "Línea en blanco = párrafo nuevo. Enlaces: [texto](https://...)" }),
+        field("🇬🇧 Text (English)", p, "body_en", { type: "textarea", rows: 9, wide: true, hint: "Opcional: si lo dejas vacío, los visitantes en inglés verán el texto en español." }),
         field("Comentarios", p, "comments", { type: "comments", rows: 3, wide: true, hint: "Uno por línea:  nombre: comentario  (con @usuario: comentario enlaza a su Neocities)" }),
       ],
     });
@@ -634,6 +651,7 @@
           pickLabel: "♪ Reusar la carátula de otra canción o elegir una ya subida",
         }),
         field("Por qué la recomiendas", m, "note", { type: "textarea", rows: 3, wide: true }),
+        field("🇬🇧 Why I recommend it (English)", m, "note_en", { type: "textarea", rows: 3, wide: true }),
       ],
     });
   }
@@ -646,6 +664,7 @@
       fields: (g) => [
         field("Imagen", g, "src", { upload: true, thumb: true, wide: true }),
         field("Texto", g, "caption", { wide: true }),
+        field("🇬🇧 Caption (English)", g, "caption_en", { wide: true }),
       ],
     });
   }
@@ -697,7 +716,8 @@
       el("p", { class: "hint" }, "El cuadro que aparece debajo de «Última transmisión», solo en el inicio. Si lo dejas vacío, se oculta."),
       el("div", { class: "grid-2" },
         field("Gif / imagen", hb, "src", { upload: true, thumb: true, wide: true }),
-        field("Título del cuadro", hb, "title", { wide: true, hint: "Opcional. Con título va dentro de un cuadro; sin título se muestra solo." })
+        field("Título del cuadro", hb, "title", { wide: true, hint: "Opcional. Con título va dentro de un cuadro; sin título se muestra solo." }),
+        field("🇬🇧 Box title (English)", hb, "title_en", { wide: true })
       ),
       el("div", { class: "btn-row" }, clearBox, resetBox, el("a", { href: "../index.html?preview=1", target: "_blank", rel: "noopener" }, "vista previa"))
     );
