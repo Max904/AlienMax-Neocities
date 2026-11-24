@@ -130,7 +130,7 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 | --- | --- |
 | Textos, blogs, música, galería | `public/data/content.js` (en el repo, se publica) |
 | Imágenes subidas desde el panel | `public/assets/uploads/` (en el repo) |
-| Visitas y me gusta | Contadores compartidos en Abacus (`public/js/counters.js`), iguales para todos |
+| Visitas y me gusta | Contadores compartidos en CounterAPI (`public/js/counters.js`), iguales para todos |
 | Firmas y comentarios pendientes | En el navegador del visitante hasta que los apruebes |
 | Borrador y token del panel | Solo en tu navegador |
 
@@ -169,10 +169,10 @@ Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto
 
 ## Contadores compartidos (visitas y me gusta)
 
-`public/js/counters.js` usa [Abacus](https://abacus.jasoncameron.dev) (gratis, sin registro) para que el contador de visitas y los me gusta sean los mismos para todos.
-- **Visitas:** cada carga de página suma 1. El número parte de 1337 (`START` en `main.js`). Si no puede conectar, deja el último valor y lo explica al pasar el mouse por encima.
-- **Me gusta:** cada navegador puede dar 1 por entrada y quitarlo con otro clic. Como Abacus solo suma, se guardan dos contadores (`like-<id>` y `unlike-<id>`) y el total es el `likes` de la entrada en el panel + me gusta − quitados.
-- Si Abacus no responde, el sitio sigue funcionando con el último valor visto.
+`public/js/counters.js` usa [CounterAPI](https://counterapi.dev) (gratis, sin registro) para que el contador de visitas y los me gusta sean los mismos para todos.
+- **Visitas:** cada carga de página suma 1. El número parte de 1400 (`START` en `main.js`). Si no puede conectar, deja el último valor y lo explica al pasar el mouse por encima.
+- **Me gusta:** cada navegador puede dar 1 por entrada y quitarlo con otro clic. Hay un solo contador por entrada (`likes-<id>`): CounterAPI suma (`up`) y resta (`down`) y devuelve el total; el número que se ve es el `likes` de la entrada en el panel + ese total.
+- Si CounterAPI no responde, el sitio sigue funcionando con el último valor visto.
 - Límite del servicio: 30 peticiones cada 10 s por IP (el sitio las espacia). Cualquiera podría sumar por su cuenta llamando a esa API: no es un contador a prueba de trampas.
 - Para empezar de cero, cambia `NS` en `counters.js`.
 

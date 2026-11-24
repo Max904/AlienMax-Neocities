@@ -88,49 +88,44 @@
       : "<li>" + T("blog.none") + "</li>";
   }
 
-  // ---- likes: el total es el mismo para todos (counters.js) y cada navegador puede dar y quitar el suyo ----
-  // El servicio de contadores solo suma, así que se guardan dos: «like-<id>» (me gusta) y «unlike-<id>» (quitados).
-  // Total = me gusta − quitados. Cada navegador aporta como mucho +1 neto.
+  // ---- likes: el total es el mismo para todos (counters.js, un solo contador por entrada que suma y resta) ----
+  // Cada navegador puede dar un me gusta por entrada y quitarlo con otro clic.
   let likes = {};   // este navegador: ¿le gusta?
-  let synced = {};  // este navegador: ¿su +1 ya está en el servicio?
-  try { likes = JSON.parse(localStorage.getItem("alienmax-likes") || "{}") || {}; } catch (e) {}
-  try { synced = JSON.parse(localStorage.getItem("alienmax-likes-synced") || "{}") || {}; } catch (e) {}
-  const save = () => {
-    try { localStorage.setItem("alienmax-likes", JSON.stringify(likes)); localStorage.setItem("alienmax-likes-synced", JSON.stringify(synced)); } catch (e) {}
-  };
+  try { likes = JSON.parse(localStorage.getItem("alienmax-likes2") || "{}") || {}; } catch (e) {}
+  const save = () => { try { localStorage.setItem("alienmax-likes2", JSON.stringify(likes)); } catch (e) {} };
 
   box.querySelectorAll(".like-btn").forEach((btn) => {
     const id = btn.dataset.post;
     const base = parseInt(btn.dataset.base || "0", 10);
     const C = window.COUNTERS;
-    const ck = "alienmax-likecount-" + id;
-    let up = 0, down = 0;
-    try { const c = JSON.parse(localStorage.getItem(ck) || "[0,0]"); up = c[0] | 0; down = c[1] | 0; } catch (e) {}
-    const total = () => base + Math.max(0, up - down);
+    const ck = "alienmax-likecount2-" + id, key = "likes-" + id;
+    let count = 0, busy = false;
+    try { count = parseInt(localStorage.getItem(ck) || "0", 10) || 0; } catch (e) {}
     const paint = () => {
       const liked = !!likes[id];
       btn.classList.toggle("liked", liked);
       btn.title = liked ? "Quitar mi me gusta" : "Me gusta";
-      btn.textContent = (liked ? "💜 " : "🤍 ") + total();
+      btn.textContent = (liked ? "💜 " : "🤍 ") + (base + Math.max(0, count));
     };
-    const keep = () => { try { localStorage.setItem(ck, JSON.stringify([up, down])); } catch (e) {} paint(); };
+    const setCount = (n) => { count = n; try { localStorage.setItem(ck, String(n)); } catch (e) {} paint(); };
 
-    btn.addEventListener("click", () => {
-      if (!likes[id]) {
-        likes[id] = true;
-        if (!synced[id]) { synced[id] = true; up += 1; if (C) C.hit("like-" + id).then((v) => { up = v; keep(); }).catch(() => {}); }
-      } else {
-        likes[id] = false;
-        if (synced[id]) { synced[id] = false; down += 1; if (C) C.hit("unlike-" + id).then((v) => { down = v; keep(); }).catch(() => {}); }
-        // si el me gusta era antiguo (solo local), no hay nada que quitar en el servicio
+    btn.addEventListener("click", async () => {
+      if (busy) return;
+      busy = true;
+      const was = !!likes[id];
+      likes[id] = !was; save();
+      setCount(count + (was ? -1 : 1)); // se ve al instante; luego manda el número real del servicio
+      try {
+        if (C) setCount(await (was ? C.down(key) : C.up(key)));
+      } catch (e) {
+        likes[id] = was; save(); // no se pudo guardar: se deshace para que no quede a medias
+        setCount(count + (was ? 1 : -1));
+        btn.title = "No pude conectar con el contador; inténtalo de nuevo.";
       }
-      save(); keep();
+      busy = false;
     });
     paint();
-    if (C) {
-      C.get("like-" + id).then((v) => { up = v; keep(); }).catch(() => {});
-      C.get("unlike-" + id).then((v) => { down = v; keep(); }).catch(() => {});
-    }
+    if (C) C.get(key).then(setCount).catch(() => {}); // si falla, se queda el último valor conocido
   });
 
   // ---- mostrar / ocultar comentarios ----

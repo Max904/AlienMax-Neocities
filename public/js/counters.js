@@ -1,29 +1,35 @@
 /* ============================================
    counters.js — contadores compartidos (visitas y me gusta)
-   Usa Abacus (https://abacus.jasoncameron.dev), un servicio gratis sin registro:
-     /hit/<ns>/<clave>  suma 1 y devuelve el valor · /get/<ns>/<clave> solo lo lee.
+   Usa CounterAPI (https://counterapi.dev), gratis y sin registro:
+     /v1/<espacio>/<nombre>/up   suma 1   · /down  resta 1   · /  solo lee.
+   Devuelve el total ya calculado, así que la página no hace ninguna resta.
    Si el servicio no responde, el sitio sigue funcionando con los valores guardados en el navegador.
-   Para empezar de cero o cambiar de contador, cambia NS.
+   Para empezar de cero, cambia NS.
    ============================================ */
 (function () {
-  const NS = "alienmax-max904";                 // «nombre único» de tu sitio en Abacus
-  const BASE = "https://abacus.jasoncameron.dev";
+  const NS = "alienmax-max904";                 // «nombre único» de tu sitio en CounterAPI
+  const BASE = "https://api.counterapi.dev/v1";
   const safe = (k) => String(k).replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 60).padEnd(3, "-");
 
-  async function call(kind, key) {
-    const r = await fetch(BASE + "/" + kind + "/" + NS + "/" + safe(key), { cache: "no-store" });
-    if (r.status === 404) return 0;             // todavía no existe: vale 0
+  async function call(op, key) {
+    const url = BASE + "/" + NS + "/" + safe(key) + (op === "get" ? "/" : "/" + op);
+    const r = await fetch(url, { cache: "no-store" });
+    if (op === "get" && (r.status === 404 || r.status === 400)) return 0; // todavía no existe: vale 0
     if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json();
-    return typeof j.value === "number" ? j.value : parseInt(j.value, 10) || 0;
+    const n = typeof j.count === "number" ? j.count : typeof j.value === "number" ? j.value : parseInt(j.count != null ? j.count : j.value, 10);
+    if (!isFinite(n)) throw new Error("respuesta inesperada");
+    return n;
   }
 
-  // lecturas una detrás de otra, con pausa (el servicio permite 30 peticiones cada 10 s por IP)
+  // peticiones una detrás de otra, con pausa, para no pasarse de los límites del servicio
   let chain = Promise.resolve();
   const slow = (fn) => { const p = chain.then(fn, fn); chain = p.catch(() => {}).then(() => new Promise((r) => setTimeout(r, 400))); return p; };
 
   window.COUNTERS = {
-    hit: (key) => slow(() => call("hit", key)),
+    up: (key) => slow(() => call("up", key)),
+    down: (key) => slow(() => call("down", key)),
     get: (key) => slow(() => call("get", key)),
+    hit: (key) => slow(() => call("up", key)),   // alias: sumar 1 (visitas)
   };
 })();

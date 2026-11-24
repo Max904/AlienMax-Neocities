@@ -4,7 +4,7 @@
 (function () {
   // contador de visitas: el mismo para todos (counters.js). Cada carga de página suma 1, como los contadores de antes.
   // El número empieza en START para que no parezca un blog recién nacido.
-  const START = 1337;
+  const START = 1400;
   const counterEl = document.getElementById("visit-counter");
   if (counterEl) {
     const show = (n) => { counterEl.textContent = String(n).padStart(7, "0"); };
