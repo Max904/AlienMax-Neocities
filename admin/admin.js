@@ -920,7 +920,7 @@
 
       el("div", { class: "step" },
         el("h3", null, "PASO 0 (OPCIONAL) · TRAER DE NEOCITIES A GITHUB"),
-        el("p", { class: "hint" }, "Si subiste o editaste archivos directamente en Neocities, tráelos a GitHub para no perderlos. «Traer» solo baja lo más nuevo y no pisa tus cambios de GitHub sin publicar. «Descarga completa» hace que Neocities mande: reemplaza todo lo que sea distinto. Ninguno borra archivos ni baja data/social.js (lleva tu tema de ntfy)."),
+        el("p", { class: "hint" }, "Si subiste o editaste archivos directamente en Neocities, tráelos a GitHub para no perderlos. «Traer» solo baja lo más nuevo y no pisa tus cambios de GitHub sin publicar. «Descarga completa» hace que Neocities mande: reemplaza todo lo que sea distinto. Ninguno borra archivos ni baja data/social.js."),
         el("div", { class: "btn-row", style: "margin-top:0" }, pull, pullFull),
         log0
       ),

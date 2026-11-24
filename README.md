@@ -72,7 +72,6 @@ así que para cambiar textos, entradas, música o imágenes no hace falta tocar 
    - Permissions → Repository permissions:
      - **Contents: Read and write** (para guardar los cambios)
      - **Actions: Read and write** (para lanzar y seguir el deploy a Neocities)
-     - **Issues: Read and write** (para revisar los mensajes de los visitantes)
 2. En el panel, pestaña **Guardar y publicar**: el usuario y el repo ya aparecen rellenos, escribe la rama
    (`main`) y pega el token. Usa **Probar conexión** para comprobarlo; avisa si falta algún permiso.
 
@@ -130,32 +129,10 @@ También hay un botón **Descargar content.js** en el panel por si prefieres ree
 | --- | --- |
 | Textos, blogs, música, galería | `public/data/content.js` (en el repo, se publica) |
 | Imágenes subidas desde el panel | `public/assets/uploads/` (en el repo) |
-| Visitas y me gusta | Contadores compartidos en CounterAPI (`public/js/counters.js`), iguales para todos |
+| Visitas y me gusta | Contadores compartidos en Abacus (`public/js/counters.js`), iguales para todos |
 | Firmas y comentarios pendientes | En el navegador del visitante hasta que los apruebes |
 | Borrador y token del panel | Solo en tu navegador |
 
-
-## Libro de visitas y comentarios (moderados por ti)
-
-El visitante **no necesita nada**: escribe, elige Anónimo o su usuario de Neocities (se muestra como enlace a `usuario.neocities.org`; no se verifica que sea suyo) y envía.
-
-1. Crea el secreto de repo **`NTFY_TOPIC`** (**Settings → Secrets and variables → Actions → New repository secret**); los workflows lo ponen en el sitio al publicar.
-   Inventa un nombre largo y difícil de adivinar, por ejemplo `alienmax-k3x9q7p2z8` (letras, números, `-` y `_`).
-   Recibes cada mensaje al instante instalando la app **ntfy** (Android/iOS) y suscribiéndote a ese tema, o abriendo `https://ntfy.sh/TU-TEMA` en el navegador. No hace falta cuenta ni activación.
-   Como el tema queda en el código público, cualquiera podría leer o mandar avisos a ese tema; nada de eso publica nada en tu sitio, porque todo pasa por tu aprobación.
-2. Con ntfy, el aviso trae un botón **«Revisar y aprobar»**: lo tocas y se abre el panel con el mensaje ya cargado. Ahí eliges
-   **✔ Aprobar y publicar** (lo guarda en GitHub y lo publica en Neocities en un solo paso) o **✕ Descartar**. Sin copiar ni pegar.
-   Para que funcione desde el celular, abre el panel una vez en ese navegador, conecta usuario/repo/token y marca «Recordar el token en este navegador».
-   El enlace del panel se configura en `admin` de `public/data/social.js`. Aprobar guarda `content.js` en el repo, así que verás un commit por cada mensaje aprobado.
-   (También puedes pegar el texto del mensaje en la pestaña **💬 Mensajes**.)
-   Al aprobar se añade al libro de visitas o a la entrada del blog.
-3. **Guarda y publica** como siempre: desde ese momento lo ve todo el mundo.
-
-Si no configuras `NTFY_TOPIC`, el mensaje se abre como una **Issue** de tu repo (`repo` en `public/data/social.js`); entonces el visitante necesita cuenta de GitHub, pero tú puedes pulsar «Buscar mensajes nuevos» en el panel
-(el token necesita **Issues: Read and write**) y las Issues se cierran solas al aprobar.
-
-Mientras espera aprobación, el visitante ve su mensaje en su navegador marcado como «pendiente». Las firmas aprobadas se editan o borran en la misma pestaña; los comentarios, en Blogs (`@usuario: texto` enlaza a ese Neocities).
-Hay trampa anti-bots, 1 envío cada 20 s y límite de 300 caracteres.
 
 ## Ditto shimeji
 
@@ -169,17 +146,17 @@ Para regenerar sprites/config desde el pack original: `python3 tools/build-ditto
 
 ## Contadores compartidos (visitas y me gusta)
 
-`public/js/counters.js` usa [CounterAPI](https://counterapi.dev) (gratis, sin registro) para que el contador de visitas y los me gusta sean los mismos para todos.
-- **Visitas:** cada carga de página suma 1. El número parte de 1400 (`START` en `main.js`). Si no puede conectar, deja el último valor y lo explica al pasar el mouse por encima.
-- **Me gusta:** cada navegador puede dar 1 por entrada y quitarlo con otro clic. Hay un solo contador por entrada (`likes-<id>`): CounterAPI suma (`up`) y resta (`down`) y devuelve el total; el número que se ve es el `likes` de la entrada en el panel + ese total.
-- Si CounterAPI no responde, el sitio sigue funcionando con el último valor visto.
+`public/js/counters.js` usa [Abacus](https://abacus.jasoncameron.dev) (gratis, sin registro) para que los me gusta sean los mismos para todos.
+- **Visitas:** ya no usan Abacus: es el script de [WebsiteOut](https://www.websiteout.net/) (`https://counter.websiteout.com/js/2/0/0/1`), puesto tal cual en el HTML de cada página dentro de «Visitas». Su número y su estilo los decide WebsiteOut.
+- **Me gusta:** cada navegador puede dar 1 por entrada y quitarlo con otro clic. Como Abacus solo suma, se guardan dos contadores (`like-<id>` y `unlike-<id>`) y el total es el `likes` de la entrada en el panel + me gusta − quitados. La página lee los dos juntos (con reintentos) y solo cambia el número si llegaron ambos.
+- Si Abacus no responde, el sitio sigue funcionando con el último valor visto.
 - Límite del servicio: 30 peticiones cada 10 s por IP (el sitio las espacia). Cualquiera podría sumar por su cuenta llamando a esa API: no es un contador a prueba de trampas.
 - Para empezar de cero, cambia `NS` en `counters.js`.
 
 
 ## Comentarios y firmas con HTML Comment Box
 
-Los comentarios del blog y las firmas del libro de visitas usan [HTML Comment Box](https://www.htmlcommentbox.com/): aparecen de inmediato, sin aprobación y sin commits. El código del widget está en `public/js/hcb.js` y la clave de tu cuenta (`mod`) en `public/data/social.js` → `hcb`. Cada entrada tiene su propio hilo (`blog/<id>`) y el libro de visitas el suyo. Para borrar o moderar, entra a htmlcommentbox.com con tu cuenta de Google. Con `mod` vacío vuelven los formularios con aprobación por ntfy.
+Los comentarios del blog y las firmas del libro de visitas usan [HTML Comment Box](https://www.htmlcommentbox.com/): aparecen de inmediato, sin aprobación y sin commits. El código del widget está en `public/js/hcb.js` y la clave de tu cuenta (`mod`) en `public/data/social.js` → `hcb`. Cada entrada tiene su propio hilo (`blog/<id>`) y el libro de visitas el suyo. Para borrar o moderar, entra a htmlcommentbox.com con tu cuenta de Google. Sin `mod`, no aparece ningún formulario de comentarios.
 
 
 ## Español / inglés
@@ -196,5 +173,5 @@ Si subes o editas archivos directamente en Neocities, el panel puede traerlos a 
 
 - Nunca borra archivos del repo. Hay dos botones: «Traer» (solo lo más nuevo) y «Descarga completa» (Neocities manda y reemplaza todo lo distinto, aunque lo de GitHub sea más nuevo; el historial de git guarda lo anterior).
 - Un archivo que ya existe y es distinto solo se baja si en Neocities se modificó **después** del último commit de ese archivo en GitHub; así no se pisan cambios que aún no publicaste.
-- `public/data/social.js` no se baja nunca (en Neocities lleva puesto el tema de ntfy, que es secreto).
+- `public/data/social.js` no se baja nunca (una copia antigua de Neocities puede traer un secreto de cuando se usaba ntfy).
 - Hace falta subir `.github/workflows/pull-neocities.yml` y `.github/scripts/pull-neocities.js` al repo, y que el token del panel tenga Actions en Read and write.

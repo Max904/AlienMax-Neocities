@@ -16,15 +16,10 @@
     const comments = p.comments || [];
     const img = U.safeUrl(p.image);
     const mood = F(p, "mood");
-    const HC = window.HCB && window.HCB.enabled;
+    // comentarios: los antiguos ya aprobados (data/content.js) y debajo el widget de HTML Comment Box
     const commentsHTML =
       '<div class="comment-list" id="cl' + i + '">' + staticComments(comments) + "</div>" +
-      (HC ? window.HCB.tip + '<div class="hcb-host" data-key="' + U.esc(window.HCB.key("blog/" + (p.id || "post" + i))) + '"></div>' : '<form class="comment-form" data-post="' + U.esc(p.id || "post" + i) + '" data-i="' + i + '">' +
-        '<textarea name="text" maxlength="300" rows="2" placeholder="' + T("cm.ph") + '" required></textarea>' +
-        '<input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
-        A.identityHTML("c" + i) +
-        '<div class="row"><button type="submit">' + T("cm.send") + '</button><span class="form-status"></span></div>' +
-      "</form>");
+      '<div class="hcb-host" data-key="' + U.esc(window.HCB ? window.HCB.key("blog/" + (p.id || "post" + i)) : "") + '"></div>';
 
     return (
       '<article class="post" data-tags="' + U.esc(tags.map(U.slug).join(" ")) + '">' +
@@ -37,7 +32,7 @@
           '<div class="tags">' + tags.map((t) => "<span>" + U.esc(t) + "</span>").join("") + "</div>" +
           (mood ? '<span class="mood">' + T("blog.mood") + " " + U.esc(mood) + "</span>" : "") +
           '<button class="like-btn" data-post="' + U.esc(p.id || "post" + i) + '" data-base="' + (parseInt(p.likes, 10) || 0) + '"></button>' +
-          '<button class="comment-toggle" data-target="c' + i + '">' + T("blog.comments") + (HC ? "" : " (" + comments.length + ")") + "</button>" +
+          '<button class="comment-toggle" data-target="c' + i + '">' + T("blog.comments") + "" + "</button>" +
         "</div>" +
         '<div class="comments" id="c' + i + '">' + commentsHTML + "</div>" +
       "</article>"
@@ -88,44 +83,60 @@
       : "<li>" + T("blog.none") + "</li>";
   }
 
-  // ---- likes: el total es el mismo para todos (counters.js, un solo contador por entrada que suma y resta) ----
-  // Cada navegador puede dar un me gusta por entrada y quitarlo con otro clic.
+  // ---- likes: el total es el mismo para todos (counters.js) y cada navegador puede dar y quitar el suyo ----
+  // El servicio de contadores solo suma, así que se guardan dos: «like-<id>» (me gusta) y «unlike-<id>» (quitados).
+  // Total = me gusta − quitados. Cada navegador aporta como mucho +1 neto.
   let likes = {};   // este navegador: ¿le gusta?
-  try { likes = JSON.parse(localStorage.getItem("alienmax-likes2") || "{}") || {}; } catch (e) {}
-  const save = () => { try { localStorage.setItem("alienmax-likes2", JSON.stringify(likes)); } catch (e) {} };
+  let synced = {};  // este navegador: ¿su +1 ya está en el servicio?
+  try { likes = JSON.parse(localStorage.getItem("alienmax-likes") || "{}") || {}; } catch (e) {}
+  try { synced = JSON.parse(localStorage.getItem("alienmax-likes-synced") || "{}") || {}; } catch (e) {}
+  const save = () => {
+    try { localStorage.setItem("alienmax-likes", JSON.stringify(likes)); localStorage.setItem("alienmax-likes-synced", JSON.stringify(synced)); } catch (e) {}
+  };
 
   box.querySelectorAll(".like-btn").forEach((btn) => {
     const id = btn.dataset.post;
     const base = parseInt(btn.dataset.base || "0", 10);
     const C = window.COUNTERS;
-    const ck = "alienmax-likecount2-" + id, key = "likes-" + id;
-    let count = 0, busy = false;
-    try { count = parseInt(localStorage.getItem(ck) || "0", 10) || 0; } catch (e) {}
+    const ck = "alienmax-likecount-" + id;
+    let up = 0, down = 0;
+    try { const c = JSON.parse(localStorage.getItem(ck) || "[0,0]"); up = c[0] | 0; down = c[1] | 0; } catch (e) {}
+    const total = () => base + Math.max(0, up - down);
     const paint = () => {
       const liked = !!likes[id];
       btn.classList.toggle("liked", liked);
       btn.title = liked ? "Quitar mi me gusta" : "Me gusta";
-      btn.textContent = (liked ? "💜 " : "🤍 ") + (base + Math.max(0, count));
+      btn.textContent = (liked ? "💜 " : "🤍 ") + total();
     };
-    const setCount = (n) => { count = n; try { localStorage.setItem(ck, String(n)); } catch (e) {} paint(); };
+    const keep = () => { try { localStorage.setItem(ck, JSON.stringify([up, down])); } catch (e) {} paint(); };
 
-    btn.addEventListener("click", async () => {
-      if (busy) return;
-      busy = true;
-      const was = !!likes[id];
-      likes[id] = !was; save();
-      setCount(count + (was ? -1 : 1)); // se ve al instante; luego manda el número real del servicio
-      try {
-        if (C) setCount(await (was ? C.down(key) : C.up(key)));
-      } catch (e) {
-        likes[id] = was; save(); // no se pudo guardar: se deshace para que no quede a medias
-        setCount(count + (was ? 1 : -1));
-        btn.title = "No pude conectar con el contador; inténtalo de nuevo.";
+    // Lee los DOS contadores y solo cambia lo que se ve si llegaron los dos (con reintentos):
+    // si uno falla (bloqueador, límite del servicio) se queda lo último que se sabía, no un número a medias.
+    const refresh = async () => {
+      if (!C) return;
+      for (let i = 0; i < 3; i++) {
+        try {
+          const a = await C.get("like-" + id);
+          const b = await C.get("unlike-" + id);
+          up = a; down = b; keep();
+          return;
+        } catch (e) { await new Promise((r) => setTimeout(r, 1500 * (i + 1))); }
       }
-      busy = false;
+    };
+
+    btn.addEventListener("click", () => {
+      if (!likes[id]) {
+        likes[id] = true;
+        if (!synced[id]) { synced[id] = true; up += 1; if (C) C.hit("like-" + id).then(refresh).catch(() => {}); }
+      } else {
+        likes[id] = false;
+        if (synced[id]) { synced[id] = false; down += 1; if (C) C.hit("unlike-" + id).then(refresh).catch(() => {}); }
+        // si el me gusta era antiguo (solo local), no hay nada que quitar en el servicio
+      }
+      save(); keep();
     });
     paint();
-    if (C) C.get(key).then(setCount).catch(() => {}); // si falla, se queda el último valor conocido
+    refresh();
   });
 
   // ---- mostrar / ocultar comentarios ----
@@ -137,63 +148,4 @@
       if (host && window.HCB) window.HCB.mount(host, host.dataset.key);
     });
   });
-
-  // ---- comentarios: los aprobados los ve todo el mundo; los recién enviados quedan «pendientes» en tu navegador ----
-  const LKEY = "alienmax-comments-pending";
-  let localC = {};
-  try { localC = JSON.parse(localStorage.getItem(LKEY) || "{}") || {}; } catch (e) {}
-
-  // lo que ya fue aprobado (o tiene más de 30 días) deja de figurar como pendiente
-  const norm = (t) => String(t || "").replace(/\s+/g, " ").trim();
-  const sameWho = (a, b) => String(a.neocities || a.name || "").toLowerCase() === String(b.neocities || b.name || "").toLowerCase();
-  let cleaned = false;
-  posts.forEach((p, i) => {
-    const id = p.id || "post" + i;
-    if (!localC[id]) return;
-    const left = localC[id].filter((c) =>
-      (!c.t || Date.now() - c.t < 30 * 864e5) &&
-      !(p.comments || []).some((a) => norm(a.text) === norm(c.text) && sameWho(a, c)));
-    if (left.length !== localC[id].length) { cleaned = true; if (left.length) localC[id] = left; else delete localC[id]; }
-  });
-  if (cleaned) { try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {} }
-
-  function paintComments(i, p) {
-    const id = p.id || "post" + i;
-    const mine = (localC[id] || []).map((c) => '<div class="comment pending"><b>' + A.who(c) + ":</b> " + U.esc(c.text) + " <small>" + T("gb.pending") + "</small></div>");
-    const approved = p.comments || [];
-    const list = document.getElementById("cl" + i);
-    const none = window.HCB && window.HCB.enabled ? "" : '<div class="comment">' + T("cm.none") + "</div>";
-    list.innerHTML = mine.join("") + staticComments(approved) || none;
-    if (window.HCB && window.HCB.enabled) return;
-    const btn = box.querySelector('.comment-toggle[data-target="c' + i + '"]');
-    if (btn) btn.textContent = T("blog.comments") + " (" + approved.length + ")";
-  }
-
-  box.querySelectorAll(".comment-form").forEach((form) => {
-    const i = +form.dataset.i, p = posts[i], id = form.dataset.post;
-    const st = form.querySelector(".form-status");
-    const say = (t, bad) => { st.textContent = t; st.className = "form-status" + (bad ? " bad" : ""); };
-    A.wireIdentity(form, "c" + i);
-    form.addEventListener("submit", async (ev) => {
-      ev.preventDefault();
-      if (form.elements["website"].value) return;
-      const text = form.elements["text"].value.trim();
-      const who = A.readIdentity(form, "c" + i);
-      if (who.error) { say(who.error, true); return; }
-      if (!text) return;
-      if (!A.cooldown()) { say(T("cm.wait"), true); return; }
-      const btn = form.querySelector("button[type=submit]");
-      btn.disabled = true; say("Enviando…");
-      const r = await A.send("comentario", who, text, { id: id, title: p.title });
-      btn.disabled = false;
-      if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
-      (localC[id] = localC[id] || []).unshift({ name: who.name, neocities: who.neocities, text: text, t: Date.now() });
-      try { localStorage.setItem(LKEY, JSON.stringify(localC)); } catch (e) {}
-      paintComments(i, p);
-      form.elements["text"].value = "";
-      say(A.canSend ? A.sentNote(r) : "Guardado solo en tu navegador (aún no hay a dónde enviarlo).");
-    });
-  });
-
-  posts.forEach((p, i) => paintComments(i, p));
 })();

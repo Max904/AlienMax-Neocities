@@ -1,73 +1,17 @@
 /* ============================================
    guestbook.js — libro de visitas
-   Muestra las firmas aprobadas (data/content.js → guestbook) y las que el
-   visitante acaba de mandar (pendientes, solo en su navegador).
+   Las firmas nuevas van con HTML Comment Box (js/hcb.js). Aquí solo se muestran
+   las firmas antiguas ya aprobadas (data/content.js → guestbook); si no hay, la caja se quita.
    ============================================ */
 (function () {
-  const form = document.getElementById("guest-form");
+  const host = document.getElementById("guest-hcb");
   const list = document.getElementById("guest-list");
   const A = window.SOCIAL_API;
-  if (!form || !list || !A) return;
+  if (!host || !A) return;
+  if (window.HCB) window.HCB.mount(host, window.HCB.key("libro-de-visitas"));
+  if (!list) return;
 
-  const S = window.SITE || {};
-  const KEY = "alienmax-guestbook-pending";
-  if (window.HCB && window.HCB.enabled) {
-    // firmas con HTML Comment Box: el formulario propio se cambia por su widget
-    const wrap = form.parentNode;
-    form.remove();
-    wrap.insertAdjacentHTML("beforeend", window.HCB.tip + '<div class="hcb-host"></div>');
-    window.HCB.mount(wrap.querySelector(".hcb-host"), window.HCB.key("libro-de-visitas"));
-    if (!(S.guestbook || []).length) { const bx = list.closest(".box") || list.parentNode; if (bx) bx.remove(); return; }
-    list.innerHTML = (S.guestbook || []).map((e) => '<div class="guest-entry"><b>' + A.who(e) + "</b><small>" + A.fmt(e.date) + "</small><p>" + A.esc(e.message) + "</p></div>").join("");
-    return;
-  }
-  const status = document.getElementById("guest-status");
-  const say = (t, bad) => { status.textContent = t; status.className = "form-status" + (bad ? " bad" : ""); };
-
-  let pending = [];
-  try { pending = JSON.parse(localStorage.getItem(KEY) || "[]") || []; } catch (e) {}
-
-  // lo que ya fue aprobado (o tiene más de 30 días) deja de figurar como pendiente
-  const norm = (t) => String(t || "").replace(/\s+/g, " ").trim();
-  const approved = (S.guestbook || []);
-  const left = pending.filter((p) =>
-    (!p.t || Date.now() - p.t < 30 * 864e5) &&
-    !approved.some((a) => norm(a.message) === norm(p.message) && String(a.neocities || a.name || "").toLowerCase() === String(p.neocities || p.name || "").toLowerCase()));
-  if (left.length !== pending.length) { pending = left; try { localStorage.setItem(KEY, JSON.stringify(pending)); } catch (e) {} }
-
-  function render() {
-    const rows = [];
-    pending.forEach((e) => rows.push({ who: A.who(e), date: window.I18N.t("gb.pending"), msg: e.message, cls: " pending" }));
-    (S.guestbook || []).forEach((e) => rows.push({ who: A.who(e), date: A.fmt(e.date), msg: e.message, cls: "" }));
-    list.innerHTML = rows.length
-      ? rows.map((r) => '<div class="guest-entry' + r.cls + '"><b>' + r.who + "</b><small>" + A.esc(r.date) + "</small><p>" + A.esc(r.msg) + "</p></div>").join("")
-      : '<div class="guest-entry">' + window.I18N.t("gb.none") + "</div>";
-  }
-
-  document.getElementById("g-ident").innerHTML = A.identityHTML("g");
-  A.wireIdentity(form, "g");
-  const msgBox = form.elements["msg"], counter = document.getElementById("msg-count");
-  msgBox.addEventListener("input", () => { counter.textContent = msgBox.value.length + " / 300"; });
-
-  form.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (form.elements["website"].value) return; // trampa para bots
-    const msg = msgBox.value.trim();
-    const who = A.readIdentity(form, "g");
-    if (who.error) { say(who.error, true); return; }
-    if (!msg) { say("Escribe un mensaje.", true); return; }
-    if (!A.cooldown()) { say(window.I18N.t("gb.wait"), true); return; }
-    const btn = form.querySelector("button[type=submit]");
-    btn.disabled = true; say("Enviando…");
-    const r = await A.send("firma", who, msg);
-    btn.disabled = false;
-    if (A.canSend && !r.ok) { say(A.failNote(r), true); return; }
-    pending.unshift({ name: who.name, neocities: who.neocities, message: msg, t: Date.now() });
-    try { localStorage.setItem(KEY, JSON.stringify(pending.slice(0, 20))); } catch (e) {}
-    render();
-    msgBox.value = ""; counter.textContent = "0 / 300";
-    say(A.canSend ? A.sentNote(r) : "Guardado solo en tu navegador (aún no hay a dónde enviarlo).");
-  });
-
-  render();
+  const old = (window.SITE || {}).guestbook || [];
+  if (!old.length) { const bx = list.closest(".box") || list.parentNode; if (bx) bx.remove(); return; }
+  list.innerHTML = old.map((e) => '<div class="guest-entry"><b>' + A.who(e) + "</b><small>" + A.fmt(e.date) + "</small><p>" + A.esc(e.message) + "</p></div>").join("");
 })();

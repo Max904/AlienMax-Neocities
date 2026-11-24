@@ -46,7 +46,6 @@
     "gb.send": ["✦ ENVIAR ✦", "✦ SEND ✦"], "gb.fine": ["Tu firma se envía a AlienMax; cuando la apruebe la verá todo el mundo. El usuario de Neocities no se verifica: solo enlaza a ese sitio.", "Your message goes to AlienMax; once approved everyone will see it. Neocities usernames are not verified: they only link to that site."],
     "gb.none": ["Aún no hay firmas. ¡Sé el primero!", "No signatures yet. Be the first!"], "gb.pending": ["pendiente de aprobación", "pending approval"],
     "anon": ["Anónimo", "Anonymous"],
-    "counter.err": ["No pude conectar con el contador compartido; se muestra el último valor.", "Couldn't reach the shared counter; showing the last value."],
     // comentarios (barra «Comentar como»)
     "id.anon": ["👤 Anónimo", "👤 Anonymous"], "id.nc": ["🛸 Usuario de Neocities", "🛸 Neocities user"], "id.custom": ["🔗 Nombre y enlace", "🔗 Name & link"],
     "id.user.ph": ["tuusuario", "yourusername"], "id.name.ph": ["Tu nombre", "Your name"], "id.link.ph": ["Enlace: instagram.com/tuusuario", "Link: instagram.com/yourname"],

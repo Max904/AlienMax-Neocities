@@ -290,3 +290,8 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: bold; }
   background: linear-gradient(180deg, #9a5cf5, #6a2fd0 50%, #5a22b8 51%, #6c32d6);
 }
 .lang-switch button.on { color: #2a0d55; text-shadow: none; background: linear-gradient(180deg, #ffd6f5, #ff9be0 50%, #f27ccf 51%, #ff9be0); }
+
+/* contador de visitas de WebsiteOut: el script escribe su propio HTML dentro de #visit-counter */
+#visit-counter { display: flex; justify-content: center; align-items: center; min-height: 36px; padding: 6px; overflow: hidden; color: #9dff6b; text-align: center; }
+#visit-counter img { max-width: 100%; height: auto; vertical-align: middle; image-rendering: pixelated; }
+#visit-counter a { color: inherit; text-decoration: none; }

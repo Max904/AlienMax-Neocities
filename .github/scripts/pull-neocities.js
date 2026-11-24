@@ -3,7 +3,7 @@
 // - Modo completo (PULL_MODE=full): baja todo lo que sea distinto, sin mirar fechas (Neocities manda).
 // - Modo normal: no pisa cambios de GitHub que aún no se publicaron: un archivo distinto solo se baja si en Neocities
 //   se modificó DESPUÉS del último commit de ese archivo en el repo.
-// - data/social.js nunca se baja (en Neocities lleva puesto el tema de ntfy, que es secreto).
+// - data/social.js nunca se baja (una copia antigua en Neocities puede traer un tema de ntfy secreto de cuando se usaba).
 // La clave (NEOCITIES_API_TOKEN) no se imprime.
 const fs = require("fs");
 const path = require("path");
@@ -43,7 +43,7 @@ const lastCommit = (rel) => {
     if (f.is_directory) continue;
     const rel = path.posix.normalize(String(f.path || "")).replace(/^\/+/, "");
     if (!rel || rel.startsWith("..") || rel.split("/").includes(".git") || rel.includes("\0")) { skipped.push(f.path + " (ruta no válida)"); continue; }
-    if (SKIP.has(rel)) { skipped.push(rel + " (no se baja: lleva el tema de ntfy)"); continue; }
+    if (SKIP.has(rel)) { skipped.push(rel + " (no se baja: una copia antigua puede traer un secreto)"); continue; }
     if (f.size > MAX) { skipped.push(rel + " (demasiado grande)"); continue; }
 
     const local = path.join(ROOT, rel);

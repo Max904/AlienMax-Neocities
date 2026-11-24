@@ -28,11 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Poner el tema de ntfy (secreto NTFY_TOPIC)
-        env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-        run: node .github/scripts/inject-contact.js
-
       - name: Armar el sitio de Pages
         run: |
           mkdir _pages
