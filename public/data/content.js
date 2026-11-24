@@ -51,8 +51,6 @@ window.SITE = {
       "date": "2026-11-24",
       "mood": "Nervioso",
       "tags": [
-        "pruebas",
-        "exámenes",
         "estudios"
       ],
       "image": "",
@@ -62,8 +60,6 @@ window.SITE = {
       "title_en": "Final Academic Weeks",
       "body_en": "Hello hello,\n\nMax here, having a pretty nerve-wracking day.\nThis week and next I have my final tests and exams, the usual.\n\nThe thing is, I've been feeling bad for a few months now. Little by little I've been losing the mental strength to keep going, not to mention that my partner and I broke up a few weeks ago.\n\nToday is the heaviest day, because I had to present the pitch for the business venture I've been working on with my team. Several presentations ran short on time, and I ran out of time too, and the hardest part of the project was also being presented: the financial situation.\n\nI wasn't chosen to present, and I don't think it went that badly for us, but I still feel nervous about it.\n\nThe only thing left today is a Mixology test, where we have to make a signature drink (our own invention), but I'm comfortable with this kind of thing.\n\nI just hope everything goes well today.\n\n- Max 💜",
       "tags_en": [
-        "test",
-        "exam",
         "studies"
       ],
       "mood_en": "Nervous"
@@ -106,7 +102,13 @@ window.SITE = {
       "cover": "assets/uploads/mwsbriiu-1000106954.jpg"
     }
   ],
-  "gallery": [],
+  "gallery": [
+    {
+      "src": "assets/uploads/mwvb0s4j-20261124_200549.jpg",
+      "caption": "Mi amada R36S, la trato de llevar a todas partes, tiene todos los juegos que necesito para pasar la hora en el tranporte publico.",
+      "caption_en": "My beloved R36S, I try to take it everywhere. It has all the games I need to pass the time on public transport."
+    }
+  ],
   "topGif": {
     "src": "assets/flower.gif",
     "pages": {
