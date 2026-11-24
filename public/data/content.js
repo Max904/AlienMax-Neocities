@@ -46,6 +46,29 @@ window.SITE = {
   },
   "posts": [
     {
+      "id": "pmwurcru4",
+      "title": "Últimas semanas académicas",
+      "date": "2026-11-24",
+      "mood": "Nervioso",
+      "tags": [
+        "pruebas",
+        "exámenes",
+        "estudios"
+      ],
+      "image": "",
+      "likes": 0,
+      "body": "Hola hola\n\nAquí Max pasando un día bastante nervioso.\nEsta semana y la próxima me tocan las pruebas y exámenes finales, lo normal.\n\nLa cosa es que me he empezado a sentir mal desde unos meses, poco a poco he empezado a perder mi fuerza mental para seguir, sin contar que terminamos con mi pareja hace unas semanas.\n\nHoy es el día más pesado, debido a que tuve que presentar el pitch sobre el emprendimiento que he estado trabajando con mi equipo. Varias presentaciones se quedaron cortas y yo también me quede sin tiempo y también se presentaba la parte más difícil del trabajo, la situación financiera.\n\nYo no salí escogido para presentar, no creo que nos haya ido tan mal, pero igual me siento nervioso por ello.\n\nLo único que falta de hoy es una prueba de Mixología, en donde tenemos que hacer un trago de autor (invención propia), pero con este tipo de cosas me manejo.\n\nSolo espero que todo salga bien hoy.\n\n- Max 💜",
+      "comments": [],
+      "title_en": "Final Academic Weeks",
+      "body_en": "Hello hello,\n\nMax here, having a pretty nerve-wracking day.\nThis week and next I have my final tests and exams, the usual.\n\nThe thing is, I've been feeling bad for a few months now. Little by little I've been losing the mental strength to keep going, not to mention that my partner and I broke up a few weeks ago.\n\nToday is the heaviest day, because I had to present the pitch for the business venture I've been working on with my team. Several presentations ran short on time, and I ran out of time too, and the hardest part of the project was also being presented: the financial situation.\n\nI wasn't chosen to present, and I don't think it went that badly for us, but I still feel nervous about it.\n\nThe only thing left today is a Mixology test, where we have to make a signature drink (our own invention), but I'm comfortable with this kind of thing.\n\nI just hope everything goes well today.\n\n- Max 💜",
+      "tags_en": [
+        "test",
+        "exam",
+        "studies"
+      ],
+      "mood_en": "Nervous"
+    },
+    {
       "id": "pmwsbh99u",
       "title": "¡Página en marcha blanca! (o morada en este caso)",
       "title_en": "Page soft launch! (or purple launch in this case)",
