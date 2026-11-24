@@ -5,8 +5,8 @@ window.SITE = {
     "tagline_en": "Broadcasting from the purple galaxy",
     "blogTagline": "Diario de a bordo, fecha estelar 2026",
     "blogTagline_en": "Captain's log, stardate 2026",
-    "marquee": "Página mayoritariamente lista! Feliz de poder dejar la base lista, ya puedo concentrarme en escribir para la página kjsjkjsjsj. Todo el sistema de comentarios está listo, ¡no olvides dejar tu firma!",
-    "marquee_en": "Page mostly ready! Happy to have the base done, now I can focus on writing for the page lol. The whole comment system is ready, don't forget to sign the guestbook!"
+    "marquee": "Pequeña actualización, se rompió el contador de me gusta en los blogs, pero ya tenemos nuevo contador de visitas y este funciona de maravilla.",
+    "marquee_en": "Quick update: the like counter on the blogs broke, but we now have a new view counter and it’s working like a charm."
   },
   "profile": {
     "name": "AlienMax",
