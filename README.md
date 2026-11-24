@@ -189,3 +189,12 @@ La página detecta el idioma del navegador y tiene un interruptor **ES | EN** ar
 - **Textos fijos** (menú, títulos, botones…): están en `public/js/i18n.js`.
 - **Tu contenido**: cada texto tiene su versión en inglés con el sufijo `_en` (`title_en`, `body_en`, `note_en`, `tags_en`…). En el panel aparecen como campos «🇬🇧 … (English)». Si dejas uno vacío, los visitantes en inglés ven el texto en español.
 - **Comentarios y firmas**: los botones «Comentar como» y el widget se traducen. Los comentarios que escribe la gente se muestran en el idioma en que se escribieron (no se traducen solos).
+
+## Traer de Neocities a GitHub
+
+Si subes o editas archivos directamente en Neocities, el panel puede traerlos a GitHub: pestaña **Guardar y publicar → Paso 0 · Traer de Neocities a GitHub** (o a mano en GitHub: Actions → *Pull from Neocities* → Run workflow). Usa el mismo secreto `NEOCITIES_API_TOKEN` del deploy y crea un commit «Traer cambios desde Neocities» con el detalle.
+
+- Nunca borra archivos del repo. Hay dos botones: «Traer» (solo lo más nuevo) y «Descarga completa» (Neocities manda y reemplaza todo lo distinto, aunque lo de GitHub sea más nuevo; el historial de git guarda lo anterior).
+- Un archivo que ya existe y es distinto solo se baja si en Neocities se modificó **después** del último commit de ese archivo en GitHub; así no se pisan cambios que aún no publicaste.
+- `public/data/social.js` no se baja nunca (en Neocities lleva puesto el tema de ntfy, que es secreto).
+- Hace falta subir `.github/workflows/pull-neocities.yml` y `.github/scripts/pull-neocities.js` al repo, y que el token del panel tenga Actions en Read and write.

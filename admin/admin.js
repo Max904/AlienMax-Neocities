@@ -863,6 +863,52 @@
       finally { neo.disabled = false; refreshStatus(); }
     };
 
+    // ---- paso 0: traer de Neocities a GitHub ----
+    const log0 = el("div", { class: "log" }, "Listo.");
+    const pull = el("button", { type: "button", class: "btn" }, "⬇ Traer de Neocities a GitHub");
+    const pullFull = el("button", { type: "button", class: "btn danger" }, "⬇⬇ Descarga completa de Neocities");
+    const runPull = async (mode) => {
+      if (!configReady()) return sayTo(log0, "Completa usuario, repo, rama y token.", "err");
+      const full = mode === "full";
+      if (!confirm(full
+        ? "DESCARGA COMPLETA: todo lo que sea distinto en Neocities reemplaza lo que hay en GitHub (public/), aunque lo de GitHub sea más nuevo o no esté publicado. No se borra ningún archivo y el historial de git conserva lo anterior; data/social.js no se toca. ¿Continuar?"
+        : "Se traerán a GitHub los archivos que estén más nuevos en Neocities (subidos o editados allí). No se borra nada y no se pisan tus cambios de GitHub sin publicar. ¿Continuar?")) return;
+      pull.disabled = pullFull.disabled = true;
+      sayTo(log0, "Lanzando la descarga desde Neocities…");
+      try {
+        let prevId = 0;
+        try { const rs = await listRuns("pull-neocities.yml", "event=workflow_dispatch&per_page=1"); prevId = rs[0] ? rs[0].id : 0; } catch (e) {}
+        const r = await api("POST", repoPath() + "/actions/workflows/pull-neocities.yml/dispatches", { ref: cfg.branch, inputs: { mode: full ? "full" : "smart" } });
+        if (!r.ok) {
+          const e = await apiError(r);
+          if (r.status === 404 || r.status === 422) e.message += " Falta .github/workflows/pull-neocities.yml en tu repo (sube la versión nueva, la que tiene la opción «mode»).";
+          else if (r.status === 403) e.message += " Revisa que el token tenga el permiso Actions (Read and write).";
+          throw e;
+        }
+        sayTo(log0, "Descarga lanzada. Esperando que empiece…");
+        let run = null;
+        try {
+          run = await watchRun("pull-neocities.yml", "event=workflow_dispatch&per_page=5", (rs) => rs.find((x) => x.id > prevId),
+            (x) => sayTo(log0, "Traer de Neocities: " + (x ? runLabel(x) : "esperando que empiece…")));
+        } catch (e) {
+          return sayTo(log0, "Lanzado, pero no pude seguir el avance (" + e.message + "). Revisa la pestaña Actions de tu repo.");
+        }
+        if (!run) return sayTo(log0, "Sigue en proceso. Revisa la pestaña Actions de tu repo.");
+        if (run.conclusion !== "success") {
+          return sayTo(log0, "No se pudo traer de Neocities (" + run.conclusion + ").\nRevisa que exista el secret NEOCITIES_API_TOKEN.", "err", { href: run.html_url, text: "→ ver qué pasó en Actions" });
+        }
+        let msg = "Listo ✔ Lo más nuevo de Neocities quedó en GitHub (revisa el detalle en el commit «Traer cambios desde Neocities»; si no hubo nada nuevo, no se crea).";
+        try {
+          if (isDirty() && !confirm("Tienes cambios sin guardar en el panel. ¿Reemplazarlos por la versión que está ahora en GitHub?")) msg += "\nTus cambios sin guardar se mantienen; el panel aún no cargó la versión nueva.";
+          else { await syncFromGitHub(true, true); msg += "\nEl panel ya cargó la última versión."; }
+        } catch (e) { msg += "\nNo pude recargar el panel (" + e.message + "): usa «Cargar última versión de GitHub»."; }
+        sayTo(log0, msg, "ok", { href: run.html_url, text: "→ ver el detalle en Actions" });
+      } catch (e) { sayTo(log0, e.message, "err"); }
+      finally { pull.disabled = pullFull.disabled = false; refreshStatus(); }
+    };
+    pull.onclick = () => runPull("smart");
+    pullFull.onclick = () => runPull("full");
+
     root.append(
       form,
       el("label", { class: "check", style: "margin-top:10px" }, remember, "Recordar el token en este navegador (no lo uses en un computador compartido)"),
@@ -872,6 +918,12 @@
       el("h3", { class: "sec" }, "ESTADO"),
       status,
 
+      el("div", { class: "step" },
+        el("h3", null, "PASO 0 (OPCIONAL) · TRAER DE NEOCITIES A GITHUB"),
+        el("p", { class: "hint" }, "Si subiste o editaste archivos directamente en Neocities, tráelos a GitHub para no perderlos. «Traer» solo baja lo más nuevo y no pisa tus cambios de GitHub sin publicar. «Descarga completa» hace que Neocities mande: reemplaza todo lo que sea distinto. Ninguno borra archivos ni baja data/social.js (lleva tu tema de ntfy)."),
+        el("div", { class: "btn-row", style: "margin-top:0" }, pull, pullFull),
+        log0
+      ),
       el("div", { class: "step" },
         el("h3", null, "PASO 1 · GUARDAR EN GITHUB Y REVISAR"),
         el("p", { class: "hint" }, "Guarda tus cambios en el repo y actualiza la copia en GitHub Pages. Neocities no se toca."),

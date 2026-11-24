@@ -1,0 +1,59 @@
+name: Pull from Neocities
+
+# Trae a GitHub (carpeta public/) lo que esté más nuevo en Neocities: archivos que subiste o editaste allí.
+# Solo se ejecuta cuando tú lo pides: botón «Traer de Neocities» del panel (admin/),
+# o a mano en GitHub: Actions -> Pull from Neocities -> Run workflow.
+# Modo smart (por defecto): no borra nada y no pisa cambios tuyos de GitHub que aún no publicaste.
+# Modo full: descarga completa; Neocities manda y se pisa todo lo que sea distinto (tampoco borra; el historial de git guarda lo anterior).
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "smart = solo lo más nuevo de Neocities · full = descarga completa (Neocities manda: pisa todo lo distinto)"
+        type: choice
+        options: [smart, full]
+        default: smart
+
+permissions:
+  contents: write   # para guardar el commit
+  actions: write    # para actualizar la copia de GitHub Pages después
+
+concurrency:
+  group: pull-neocities
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # hace falta el historial para saber qué archivo es más nuevo
+
+      - name: Traer archivos de Neocities
+        env:
+          NEOCITIES_API_TOKEN: ${{ secrets.NEOCITIES_API_TOKEN }}
+          PULL_MODE: ${{ inputs.mode }}
+        run: node .github/scripts/pull-neocities.js
+
+      - name: Guardar en GitHub
+        id: commit
+        run: |
+          git add -A public
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nada nuevo que guardar."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            { echo "Traer cambios desde Neocities (${{ inputs.mode }})"; echo; cat pull-summary.txt; } > /tmp/msg.txt
+            git commit -F /tmp/msg.txt
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Actualizar la copia en GitHub Pages
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref "${{ github.ref_name }}"
