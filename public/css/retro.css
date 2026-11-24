@@ -293,5 +293,6 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: bold; }
 
 /* contador de visitas de WebsiteOut: el script escribe su propio HTML dentro de #visit-counter */
 #visit-counter { display: flex; justify-content: center; align-items: center; min-height: 36px; padding: 6px; overflow: hidden; color: #9dff6b; text-align: center; }
-#visit-counter img { max-width: 100%; height: auto; vertical-align: middle; image-rendering: pixelated; }
+#visit-counter { color: #c9a6ff; }
+#visit-counter img, #visit-counter canvas, #visit-counter svg { max-width: 100%; height: auto; vertical-align: middle; image-rendering: pixelated; filter: hue-rotate(165deg) saturate(1.3) brightness(1.15); } /* los dígitos verdes de WebsiteOut pasan a morado */
 #visit-counter a { color: inherit; text-decoration: none; }
