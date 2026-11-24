@@ -90,6 +90,14 @@ window.SITE = {
   ],
   "music": [
     {
+      "title": "Ostravi Trag",
+      "artist": "September",
+      "note": "Mi canción favorita del álbum, es una canción tan eterea que me devuelve el alma.\n\n\"Hasta la flor más débil puede florecer en cemento\" - Max 💜",
+      "url": "https://m.youtube.com/watch?v=biVfj35iyDc",
+      "cover": "assets/uploads/mwus5zyi-1000120578.jpg",
+      "note_en": "My favorite song on the album is so ethereal that it gives me my soul back.\n\n\"Even the weakest flower can bloom in concrete\" - Max 💜"
+    },
+    {
       "title": "Walkin' On The Sun",
       "artist": "Smash Mouth",
       "note": "Una de las mejores canciones de Smash Mouth (en mi parecer), siempre me levanta el animo. Aunque me gustaria que menos gente los reconociera por una de sus canciones en Shrek.",
